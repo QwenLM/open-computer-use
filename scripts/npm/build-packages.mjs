@@ -22,9 +22,7 @@ const defaultOutDir = path.join(repoRoot, "dist", "npm");
 const appBundleName = "Open Computer Use.app";
 const appExecutableName = "OpenComputerUse";
 const metaPackageNames = [
-  "open-computer-use",
-  "open-computer-use-mcp",
-  "open-codex-computer-use-mcp",
+  "@qwen-code/open-computer-use",
 ];
 const runtimeTargets = [
   {
@@ -327,7 +325,7 @@ function resolveNativeExecutable() {
     fail(\`Missing bundled native runtime for \${platformKey} at \${executablePath}.
 
 Reinstall with:
-  npm install -g open-computer-use\`);
+  npm install -g @qwen-code/open-computer-use\`);
   }
 
   return executablePath;
@@ -472,7 +470,7 @@ open-computer-use install-codex-plugin
 - Linux requires a signed-in desktop session with AT-SPI2 / D-Bus accessibility available for real app control.
 - Windows requires a signed-in desktop session for UI Automation access.
 
-Source repository: https://github.com/iFurySt/open-codex-computer-use
+Source repository: https://github.com/QwenLM/open-computer-use
 `;
 }
 
@@ -495,13 +493,13 @@ function renderMetaPackageJson(packageName, version) {
     version,
     description: "Cross-platform Computer Use MCP server launcher. After install, configure open-computer-use mcp.",
     license: "MIT",
-    homepage: "https://github.com/iFurySt/open-codex-computer-use",
+    homepage: "https://github.com/QwenLM/open-computer-use",
     repository: {
       type: "git",
-      url: "git+https://github.com/iFurySt/open-codex-computer-use.git",
+      url: "git+https://github.com/QwenLM/open-computer-use.git",
     },
     bugs: {
-      url: "https://github.com/iFurySt/open-codex-computer-use/issues",
+      url: "https://github.com/QwenLM/open-computer-use/issues",
     },
     keywords: packageKeywords(),
     preferGlobal: true,

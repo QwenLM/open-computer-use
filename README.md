@@ -1,5 +1,7 @@
 # open-computer-use
 
+> **This is a [QwenLM](https://github.com/QwenLM) fork** of [`iFurySt/open-codex-computer-use`](https://github.com/iFurySt/open-codex-computer-use), maintained for integration with [Qwen Code](https://github.com/QwenLM/qwen-code). For the original project, please see upstream.
+
 [![English](https://img.shields.io/badge/English-Click-yellow)](./README.md)
 [![简体中文](https://img.shields.io/badge/简体中文-点击查看-orange)](./README.zh-CN.md)
 [![Release](https://img.shields.io/github/v/release/iFurySt/open-codex-computer-use)](https://github.com/iFurySt/open-codex-computer-use/releases)
@@ -40,7 +42,7 @@ https://github.com/user-attachments/assets/e036b1c8-2200-4896-abd4-19225915cf66
 ## Quick Start
 
 ```bash
-npm i -g open-computer-use
+npm i -g @qwen-code/open-computer-use
 ```
 
 **On macOS, run it once and grant `Accessibility` and `Screen Recording`. Windows and Linux do not need this step.**

@@ -109,16 +109,14 @@ public struct PermissionDiagnostics: Sendable {
 
 public enum PermissionSupport {
     public static let bundleDisplayName = "Open Computer Use"
-    public static let bundleIdentifier = "com.ifuryst.opencomputeruse"
+    public static let bundleIdentifier = "com.qwenlm.opencomputeruse"
     public static let developmentBundleDisplayName = "Open Computer Use (Dev)"
-    public static let developmentBundleIdentifier = "com.ifuryst.opencomputeruse.dev"
+    public static let developmentBundleIdentifier = "com.qwenlm.opencomputeruse.dev"
     private static let releaseAppBundleName = "\(bundleDisplayName).app"
     private static let developmentAppBundleName = "\(developmentBundleDisplayName).app"
     private static let appVariantInfoKey = "OpenComputerUseAppVariant"
     private static let npmPackageNames = [
-        "open-computer-use",
-        "open-computer-use-mcp",
-        "open-codex-computer-use-mcp",
+        "@qwen-code/open-computer-use",
     ]
 
     public static func currentBundleDisplayName(bundle: Bundle = .main) -> String {
@@ -256,9 +254,12 @@ public enum PermissionSupport {
 
         for nodeModulesRoot in npmGlobalNodeModulesRoots() {
             for packageName in npmPackageNames {
+                var packageRoot = nodeModulesRoot
+                for segment in packageName.split(separator: "/") {
+                    packageRoot = packageRoot.appendingPathComponent(String(segment), isDirectory: true)
+                }
                 appendCandidate(
-                    nodeModulesRoot
-                    .appendingPathComponent(packageName, isDirectory: true)
+                    packageRoot
                     .appendingPathComponent("dist", isDirectory: true)
                     .appendingPathComponent(releaseAppBundleName, isDirectory: true)
                 )
