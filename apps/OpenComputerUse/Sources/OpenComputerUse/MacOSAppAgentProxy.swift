@@ -4,7 +4,7 @@ import Foundation
 import OpenComputerUseKit
 
 private let appAgentCommand = "__open-computer-use-app-agent"
-private let appAgentDisableEnvironmentKey = "OPEN_CU_DISABLE_APP_AGENT_PROXY"
+private let appAgentDisableEnvironmentKey = "OPEN_COMPUTER_USE_DISABLE_APP_AGENT_PROXY"
 private let appAgentProcessStartDate = Date()
 
 enum MacOSAppAgentProxy {
@@ -140,7 +140,7 @@ enum MacOSAppAgentProxy {
 
     private static func proxiedEnvironment() -> [String: String] {
         ProcessInfo.processInfo.environment.filter { key, _ in
-            key.hasPrefix("OPEN_CU_")
+            key.hasPrefix("OPEN_COMPUTER_USE_")
         }
     }
 }

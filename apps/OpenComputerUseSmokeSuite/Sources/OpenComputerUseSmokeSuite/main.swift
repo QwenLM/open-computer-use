@@ -304,8 +304,8 @@ enum OpenComputerUseSmokeSuite {
         let observationURL = cursorObservationFileURL()
         try? FileManager.default.removeItem(at: observationURL)
         var environment = smokeServerEnvironment()
-        environment["OPEN_CU_VISUAL_CURSOR"] = "1"
-        environment["OPEN_CU_VISUAL_CURSOR_OBSERVATION_FILE"] = observationURL.path
+        environment["OPEN_COMPUTER_USE_VISUAL_CURSOR"] = "1"
+        environment["OPEN_COMPUTER_USE_VISUAL_CURSOR_OBSERVATION_FILE"] = observationURL.path
 
         let client = try MCPClient(executableURL: serverURL, arguments: ["mcp"], environment: environment)
         defer {
@@ -347,13 +347,13 @@ enum OpenComputerUseSmokeSuite {
 
     private static func smokeServerEnvironment() -> [String: String] {
         var environment = ProcessInfo.processInfo.environment
-        environment["OPEN_CU_DISABLE_APP_AGENT_PROXY"] = "1"
+        environment["OPEN_COMPUTER_USE_DISABLE_APP_AGENT_PROXY"] = "1"
         return environment
     }
 
     private static func smokeFixtureEnvironment() -> [String: String] {
         var environment = ProcessInfo.processInfo.environment
-        environment["OPEN_CU_FIXTURE_HEADLESS"] = "1"
+        environment["OPEN_COMPUTER_USE_FIXTURE_HEADLESS"] = "1"
         return environment
     }
 

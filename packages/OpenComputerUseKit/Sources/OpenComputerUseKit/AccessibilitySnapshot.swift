@@ -47,15 +47,15 @@ let accessibilityTreeMaxDepth = 64
 /// vars fall back to ``defaults``.
 ///
 /// Recognized variables (all optional, all read at capture time):
-///   - `OPEN_CU_IMAGE_CAPTURE_TIMEOUT` — `SCScreenshotManager.captureImage`
+///   - `OPEN_COMPUTER_USE_IMAGE_CAPTURE_TIMEOUT` — `SCScreenshotManager.captureImage`
 ///     wait seconds. Positive float. Default 5.
-///   - `OPEN_CU_IMAGE_MAX_BYTES` — PNG byte budget after encoding.
+///   - `OPEN_COMPUTER_USE_IMAGE_MAX_BYTES` — PNG byte budget after encoding.
 ///     Downsampling iterates until the result fits this budget OR
 ///     ``minScale`` is reached. Positive integer. Default 900_000.
-///   - `OPEN_CU_IMAGE_MAX_DIMENSION` — long-edge pixel cap. The initial
+///   - `OPEN_COMPUTER_USE_IMAGE_MAX_DIMENSION` — long-edge pixel cap. The initial
 ///     scale is `min(1, maxDimension / largestImageDimension)`.
 ///     Positive float. Default 1280.
-///   - `OPEN_CU_IMAGE_MIN_SCALE` — minimum downscale ratio the iteration
+///   - `OPEN_COMPUTER_USE_IMAGE_MIN_SCALE` — minimum downscale ratio the iteration
 ///     loop is allowed to reach before giving up. Float in (0, 1].
 ///     Default 0.25.
 ///
@@ -95,13 +95,13 @@ public struct ImageCaptureConfig: Sendable, Equatable {
     public static func fromEnvironment(
         _ environment: [String: String] = ProcessInfo.processInfo.environment
     ) -> ImageCaptureConfig {
-        let captureTimeout = parseImageConfigPositiveDouble(environment["OPEN_CU_IMAGE_CAPTURE_TIMEOUT"])
+        let captureTimeout = parseImageConfigPositiveDouble(environment["OPEN_COMPUTER_USE_IMAGE_CAPTURE_TIMEOUT"])
             ?? defaults.captureTimeout
-        let maxPNGBytes = parseImageConfigPositiveInt(environment["OPEN_CU_IMAGE_MAX_BYTES"])
+        let maxPNGBytes = parseImageConfigPositiveInt(environment["OPEN_COMPUTER_USE_IMAGE_MAX_BYTES"])
             ?? defaults.maxPNGBytes
-        let maxDimension: CGFloat = parseImageConfigPositiveDouble(environment["OPEN_CU_IMAGE_MAX_DIMENSION"])
+        let maxDimension: CGFloat = parseImageConfigPositiveDouble(environment["OPEN_COMPUTER_USE_IMAGE_MAX_DIMENSION"])
             .map { CGFloat($0) } ?? defaults.maxDimension
-        let minScale: CGFloat = parseImageConfigUnitInterval(environment["OPEN_CU_IMAGE_MIN_SCALE"])
+        let minScale: CGFloat = parseImageConfigUnitInterval(environment["OPEN_COMPUTER_USE_IMAGE_MIN_SCALE"])
             .map { CGFloat($0) } ?? defaults.minScale
         return ImageCaptureConfig(
             captureTimeout: captureTimeout,

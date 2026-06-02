@@ -99,7 +99,7 @@ func makeVisualCursorTarget(
 }
 
 func inputFallbackDebugEnabled(environment: [String: String]) -> Bool {
-    guard let rawValue = environment["OPEN_CU_DEBUG_INPUT_FALLBACKS"]?
+    guard let rawValue = environment["OPEN_COMPUTER_USE_DEBUG_INPUT_FALLBACKS"]?
         .trimmingCharacters(in: .whitespacesAndNewlines)
         .lowercased()
     else {
@@ -110,7 +110,7 @@ func inputFallbackDebugEnabled(environment: [String: String]) -> Bool {
 }
 
 func globalPointerFallbacksEnabled(environment: [String: String]) -> Bool {
-    guard let rawValue = environment["OPEN_CU_ALLOW_GLOBAL_POINTER_FALLBACKS"]?
+    guard let rawValue = environment["OPEN_COMPUTER_USE_ALLOW_GLOBAL_POINTER_FALLBACKS"]?
         .trimmingCharacters(in: .whitespacesAndNewlines)
         .lowercased()
     else {
@@ -1675,7 +1675,7 @@ public final class ComputerUseService {
         } catch {
             guard globalPointerFallbacksEnabled(environment: ProcessInfo.processInfo.environment) else {
                 throw ComputerUseError.message(
-                    "click could not be handled through accessibility, and global pointer fallback is disabled. Set OPEN_CU_ALLOW_GLOBAL_POINTER_FALLBACKS=1 to allow physical-pointer fallback for this process."
+                    "click could not be handled through accessibility, and global pointer fallback is disabled. Set OPEN_COMPUTER_USE_ALLOW_GLOBAL_POINTER_FALLBACKS=1 to allow physical-pointer fallback for this process."
                 )
             }
         }

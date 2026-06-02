@@ -31,7 +31,7 @@ It supports the same core tool surface across macOS, Linux, and Windows:
 - Always use the installed `open-computer-use` CLI or an explicit MCP config; do not assume host-specific plugin helpers exist.
 - Always run `get_app_state` before using `element_index`; do not guess indexes across sessions or after large UI changes.
 - Prefer semantic actions and `set_value` for editable controls. Use coordinate `click`, `scroll`, and `drag` only when the element tree does not expose a safer target.
-- On macOS, do not enable `OPEN_CU_ALLOW_GLOBAL_POINTER_FALLBACKS=1` unless the user explicitly wants diagnostic behavior that may move the real pointer.
+- On macOS, do not enable `OPEN_COMPUTER_USE_ALLOW_GLOBAL_POINTER_FALLBACKS=1` unless the user explicitly wants diagnostic behavior that may move the real pointer.
 - On Windows and Linux, confirm the command is running inside the logged-in desktop session before assuming GUI automation is available.
 
 ## Common CLI Actions

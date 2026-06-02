@@ -1103,25 +1103,25 @@ final class OpenComputerUseKitTests: XCTestCase {
 
     func testVisualCursorEnvFlagDefaultsToEnabled() {
         XCTAssertTrue(visualCursorEnabled(environment: [:]))
-        XCTAssertTrue(visualCursorEnabled(environment: ["OPEN_CU_VISUAL_CURSOR": "1"]))
-        XCTAssertFalse(visualCursorEnabled(environment: ["OPEN_CU_VISUAL_CURSOR": "0"]))
-        XCTAssertFalse(visualCursorEnabled(environment: ["OPEN_CU_VISUAL_CURSOR": "false"]))
+        XCTAssertTrue(visualCursorEnabled(environment: ["OPEN_COMPUTER_USE_VISUAL_CURSOR": "1"]))
+        XCTAssertFalse(visualCursorEnabled(environment: ["OPEN_COMPUTER_USE_VISUAL_CURSOR": "0"]))
+        XCTAssertFalse(visualCursorEnabled(environment: ["OPEN_COMPUTER_USE_VISUAL_CURSOR": "false"]))
     }
 
     func testInputFallbackDebugFlagDefaultsToDisabled() {
         XCTAssertFalse(inputFallbackDebugEnabled(environment: [:]))
-        XCTAssertTrue(inputFallbackDebugEnabled(environment: ["OPEN_CU_DEBUG_INPUT_FALLBACKS": "1"]))
-        XCTAssertTrue(inputFallbackDebugEnabled(environment: ["OPEN_CU_DEBUG_INPUT_FALLBACKS": "true"]))
-        XCTAssertFalse(inputFallbackDebugEnabled(environment: ["OPEN_CU_DEBUG_INPUT_FALLBACKS": "0"]))
-        XCTAssertFalse(inputFallbackDebugEnabled(environment: ["OPEN_CU_DEBUG_INPUT_FALLBACKS": "off"]))
+        XCTAssertTrue(inputFallbackDebugEnabled(environment: ["OPEN_COMPUTER_USE_DEBUG_INPUT_FALLBACKS": "1"]))
+        XCTAssertTrue(inputFallbackDebugEnabled(environment: ["OPEN_COMPUTER_USE_DEBUG_INPUT_FALLBACKS": "true"]))
+        XCTAssertFalse(inputFallbackDebugEnabled(environment: ["OPEN_COMPUTER_USE_DEBUG_INPUT_FALLBACKS": "0"]))
+        XCTAssertFalse(inputFallbackDebugEnabled(environment: ["OPEN_COMPUTER_USE_DEBUG_INPUT_FALLBACKS": "off"]))
     }
 
     func testGlobalPointerFallbackFlagDefaultsToDisabled() {
         XCTAssertFalse(globalPointerFallbacksEnabled(environment: [:]))
-        XCTAssertTrue(globalPointerFallbacksEnabled(environment: ["OPEN_CU_ALLOW_GLOBAL_POINTER_FALLBACKS": "1"]))
-        XCTAssertTrue(globalPointerFallbacksEnabled(environment: ["OPEN_CU_ALLOW_GLOBAL_POINTER_FALLBACKS": "yes"]))
-        XCTAssertFalse(globalPointerFallbacksEnabled(environment: ["OPEN_CU_ALLOW_GLOBAL_POINTER_FALLBACKS": "0"]))
-        XCTAssertFalse(globalPointerFallbacksEnabled(environment: ["OPEN_CU_ALLOW_GLOBAL_POINTER_FALLBACKS": "false"]))
+        XCTAssertTrue(globalPointerFallbacksEnabled(environment: ["OPEN_COMPUTER_USE_ALLOW_GLOBAL_POINTER_FALLBACKS": "1"]))
+        XCTAssertTrue(globalPointerFallbacksEnabled(environment: ["OPEN_COMPUTER_USE_ALLOW_GLOBAL_POINTER_FALLBACKS": "yes"]))
+        XCTAssertFalse(globalPointerFallbacksEnabled(environment: ["OPEN_COMPUTER_USE_ALLOW_GLOBAL_POINTER_FALLBACKS": "0"]))
+        XCTAssertFalse(globalPointerFallbacksEnabled(environment: ["OPEN_COMPUTER_USE_ALLOW_GLOBAL_POINTER_FALLBACKS": "false"]))
     }
 
     func testSetValueAttributeGateMatchesOfficialSettableBoundary() throws {
@@ -1810,10 +1810,10 @@ final class OpenComputerUseKitTests: XCTestCase {
 
     func testImageCaptureConfigReadsAllFourVariables() {
         let config = ImageCaptureConfig.fromEnvironment([
-            "OPEN_CU_IMAGE_CAPTURE_TIMEOUT": "8.5",
-            "OPEN_CU_IMAGE_MAX_BYTES": "262144",
-            "OPEN_CU_IMAGE_MAX_DIMENSION": "640",
-            "OPEN_CU_IMAGE_MIN_SCALE": "0.1",
+            "OPEN_COMPUTER_USE_IMAGE_CAPTURE_TIMEOUT": "8.5",
+            "OPEN_COMPUTER_USE_IMAGE_MAX_BYTES": "262144",
+            "OPEN_COMPUTER_USE_IMAGE_MAX_DIMENSION": "640",
+            "OPEN_COMPUTER_USE_IMAGE_MIN_SCALE": "0.1",
         ])
         XCTAssertEqual(config.captureTimeout, 8.5)
         XCTAssertEqual(config.maxPNGBytes, 262_144)
@@ -1824,7 +1824,7 @@ final class OpenComputerUseKitTests: XCTestCase {
     func testImageCaptureConfigPartialOverrideKeepsOtherDefaults() {
         // Setting just one var must NOT zero out the others.
         let config = ImageCaptureConfig.fromEnvironment([
-            "OPEN_CU_IMAGE_MAX_DIMENSION": "512",
+            "OPEN_COMPUTER_USE_IMAGE_MAX_DIMENSION": "512",
         ])
         XCTAssertEqual(config.maxDimension, 512)
         XCTAssertEqual(config.captureTimeout, ImageCaptureConfig.defaults.captureTimeout)
@@ -1834,10 +1834,10 @@ final class OpenComputerUseKitTests: XCTestCase {
 
     func testImageCaptureConfigIgnoresNonNumericValues() {
         let config = ImageCaptureConfig.fromEnvironment([
-            "OPEN_CU_IMAGE_CAPTURE_TIMEOUT": "abc",
-            "OPEN_CU_IMAGE_MAX_BYTES": "not-a-number",
-            "OPEN_CU_IMAGE_MAX_DIMENSION": "",
-            "OPEN_CU_IMAGE_MIN_SCALE": "  ",
+            "OPEN_COMPUTER_USE_IMAGE_CAPTURE_TIMEOUT": "abc",
+            "OPEN_COMPUTER_USE_IMAGE_MAX_BYTES": "not-a-number",
+            "OPEN_COMPUTER_USE_IMAGE_MAX_DIMENSION": "",
+            "OPEN_COMPUTER_USE_IMAGE_MIN_SCALE": "  ",
         ])
         XCTAssertEqual(config, ImageCaptureConfig.defaults)
     }
@@ -1847,10 +1847,10 @@ final class OpenComputerUseKitTests: XCTestCase {
         // would short-circuit `boundedScreenshotPNGData` to return nil and the
         // model would receive no screenshot.
         let config = ImageCaptureConfig.fromEnvironment([
-            "OPEN_CU_IMAGE_CAPTURE_TIMEOUT": "0",
-            "OPEN_CU_IMAGE_MAX_BYTES": "-1",
-            "OPEN_CU_IMAGE_MAX_DIMENSION": "-100",
-            "OPEN_CU_IMAGE_MIN_SCALE": "0",
+            "OPEN_COMPUTER_USE_IMAGE_CAPTURE_TIMEOUT": "0",
+            "OPEN_COMPUTER_USE_IMAGE_MAX_BYTES": "-1",
+            "OPEN_COMPUTER_USE_IMAGE_MAX_DIMENSION": "-100",
+            "OPEN_COMPUTER_USE_IMAGE_MIN_SCALE": "0",
         ])
         XCTAssertEqual(config, ImageCaptureConfig.defaults)
     }
@@ -1859,7 +1859,7 @@ final class OpenComputerUseKitTests: XCTestCase {
         // minScale is a downscale RATIO — values > 1 are nonsensical and
         // would make the iteration loop give up before the first attempt.
         let config = ImageCaptureConfig.fromEnvironment([
-            "OPEN_CU_IMAGE_MIN_SCALE": "2.0",
+            "OPEN_COMPUTER_USE_IMAGE_MIN_SCALE": "2.0",
         ])
         XCTAssertEqual(config.minScale, ImageCaptureConfig.defaults.minScale)
     }
@@ -1869,7 +1869,7 @@ final class OpenComputerUseKitTests: XCTestCase {
         // all — accept whatever the encoded PNG byte count is"). The
         // bounded function relies on this case being reachable.
         let config = ImageCaptureConfig.fromEnvironment([
-            "OPEN_CU_IMAGE_MIN_SCALE": "1.0",
+            "OPEN_COMPUTER_USE_IMAGE_MIN_SCALE": "1.0",
         ])
         XCTAssertEqual(config.minScale, 1)
     }
@@ -1878,8 +1878,8 @@ final class OpenComputerUseKitTests: XCTestCase {
         // Env vars sourced from shells or task runners often carry
         // trailing whitespace; tolerate that gracefully.
         let config = ImageCaptureConfig.fromEnvironment([
-            "OPEN_CU_IMAGE_MAX_BYTES": "  500000  ",
-            "OPEN_CU_IMAGE_MAX_DIMENSION": "\t720\n",
+            "OPEN_COMPUTER_USE_IMAGE_MAX_BYTES": "  500000  ",
+            "OPEN_COMPUTER_USE_IMAGE_MAX_DIMENSION": "\t720\n",
         ])
         XCTAssertEqual(config.maxPNGBytes, 500_000)
         XCTAssertEqual(config.maxDimension, 720)
@@ -1890,8 +1890,8 @@ final class OpenComputerUseKitTests: XCTestCase {
         // ImageCaptureConfig and confirm the resulting PNG honors it.
         let image = try makeSolidTestImage(width: 1600, height: 1200)
         let config = ImageCaptureConfig.fromEnvironment([
-            "OPEN_CU_IMAGE_MAX_DIMENSION": "320",
-            "OPEN_CU_IMAGE_MIN_SCALE": "0.05",
+            "OPEN_COMPUTER_USE_IMAGE_MAX_DIMENSION": "320",
+            "OPEN_COMPUTER_USE_IMAGE_MIN_SCALE": "0.05",
         ])
         let data = try XCTUnwrap(boundedScreenshotPNGData(
             for: image,

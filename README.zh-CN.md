@@ -114,10 +114,10 @@ open-computer-use -h
 
 | 变量 | 默认值 | 含义 |
 |---|---|---|
-| `OPEN_CU_IMAGE_CAPTURE_TIMEOUT` | `5` | `SCScreenshotManager.captureImage` 的等待秒数，超时后 a11y 树仍会返回，只丢 `image` block。正浮点数。 |
-| `OPEN_CU_IMAGE_MAX_BYTES` | `900000` | PNG 编码后字节预算。降采样会以 `scale *= 0.85` 迭代直到字节数符合预算，或触及 `OPEN_CU_IMAGE_MIN_SCALE` 下限。正整数。 |
-| `OPEN_CU_IMAGE_MAX_DIMENSION` | `1280` | 返回 PNG 的长边像素上限。初始 scale = `min(1, OPEN_CU_IMAGE_MAX_DIMENSION / 原图最大边长度)`。正浮点数。 |
-| `OPEN_CU_IMAGE_MIN_SCALE` | `0.25` | 降采样比例的下限。一旦迭代低于这个值就停下，返回目前最接近预算的结果（哪怕仍超 `OPEN_CU_IMAGE_MAX_BYTES`）。`(0, 1]` 区间的浮点数。 |
+| `OPEN_COMPUTER_USE_IMAGE_CAPTURE_TIMEOUT` | `5` | `SCScreenshotManager.captureImage` 的等待秒数，超时后 a11y 树仍会返回，只丢 `image` block。正浮点数。 |
+| `OPEN_COMPUTER_USE_IMAGE_MAX_BYTES` | `900000` | PNG 编码后字节预算。降采样会以 `scale *= 0.85` 迭代直到字节数符合预算，或触及 `OPEN_COMPUTER_USE_IMAGE_MIN_SCALE` 下限。正整数。 |
+| `OPEN_COMPUTER_USE_IMAGE_MAX_DIMENSION` | `1280` | 返回 PNG 的长边像素上限。初始 scale = `min(1, OPEN_COMPUTER_USE_IMAGE_MAX_DIMENSION / 原图最大边长度)`。正浮点数。 |
+| `OPEN_COMPUTER_USE_IMAGE_MIN_SCALE` | `0.25` | 降采样比例的下限。一旦迭代低于这个值就停下，返回目前最接近预算的结果（哪怕仍超 `OPEN_COMPUTER_USE_IMAGE_MAX_BYTES`）。`(0, 1]` 区间的浮点数。 |
 
 任何降采样都不会破坏点击精度——坐标 tool（`click` / `drag` / `scroll`）会从返回的 PNG 字节里读出实际像素尺寸，按当前窗口 bounds 比例反算模型提供的坐标。
 
