@@ -305,7 +305,7 @@ function Resolve-App([string]$query) {
         return $match
     }
 
-    if (Test-EnvFlagEnabled "OPEN_COMPUTER_USE_WINDOWS_ALLOW_APP_LAUNCH") {
+    if (Test-EnvFlagEnabled "OPEN_CU_WINDOWS_ALLOW_APP_LAUNCH") {
         try {
             $started = Start-Process -FilePath $normalized -PassThru
             for ($i = 0; $i -lt 20; $i++) {
@@ -711,8 +711,8 @@ function Invoke-SecondaryAction($element, [string]$action) {
             if ($null -ne $pattern) { $pattern.ScrollIntoView(); return }
         }
         "setfocus" {
-            if (-not (Test-EnvFlagEnabled "OPEN_COMPUTER_USE_WINDOWS_ALLOW_FOCUS_ACTIONS")) {
-                throw "SetFocus is disabled by default to avoid stealing user focus; set OPEN_COMPUTER_USE_WINDOWS_ALLOW_FOCUS_ACTIONS=1 to enable it."
+            if (-not (Test-EnvFlagEnabled "OPEN_CU_WINDOWS_ALLOW_FOCUS_ACTIONS")) {
+                throw "SetFocus is disabled by default to avoid stealing user focus; set OPEN_CU_WINDOWS_ALLOW_FOCUS_ACTIONS=1 to enable it."
             }
             $element.SetFocus()
             return
@@ -836,8 +836,8 @@ function Invoke-TypeText($process, [string]$text) {
     if ($null -ne $element) {
         $valuePattern = Get-CurrentPatternOrNull $element ([Windows.Automation.ValuePattern]::Pattern)
         if ($null -ne $valuePattern -and -not $valuePattern.Current.IsReadOnly) {
-            if (-not (Test-EnvFlagEnabled "OPEN_COMPUTER_USE_WINDOWS_ALLOW_UIA_TEXT_FALLBACK")) {
-                throw "UIA ValuePattern text fallback is disabled by default because it may bring the target app to the foreground; set OPEN_COMPUTER_USE_WINDOWS_ALLOW_UIA_TEXT_FALLBACK=1 to enable it."
+            if (-not (Test-EnvFlagEnabled "OPEN_CU_WINDOWS_ALLOW_UIA_TEXT_FALLBACK")) {
+                throw "UIA ValuePattern text fallback is disabled by default because it may bring the target app to the foreground; set OPEN_CU_WINDOWS_ALLOW_UIA_TEXT_FALLBACK=1 to enable it."
             }
             $current = ""
             try { $current = [string]$valuePattern.Current.Value } catch {}

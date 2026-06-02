@@ -1103,25 +1103,25 @@ final class OpenComputerUseKitTests: XCTestCase {
 
     func testVisualCursorEnvFlagDefaultsToEnabled() {
         XCTAssertTrue(visualCursorEnabled(environment: [:]))
-        XCTAssertTrue(visualCursorEnabled(environment: ["OPEN_COMPUTER_USE_VISUAL_CURSOR": "1"]))
-        XCTAssertFalse(visualCursorEnabled(environment: ["OPEN_COMPUTER_USE_VISUAL_CURSOR": "0"]))
-        XCTAssertFalse(visualCursorEnabled(environment: ["OPEN_COMPUTER_USE_VISUAL_CURSOR": "false"]))
+        XCTAssertTrue(visualCursorEnabled(environment: ["OPEN_CU_VISUAL_CURSOR": "1"]))
+        XCTAssertFalse(visualCursorEnabled(environment: ["OPEN_CU_VISUAL_CURSOR": "0"]))
+        XCTAssertFalse(visualCursorEnabled(environment: ["OPEN_CU_VISUAL_CURSOR": "false"]))
     }
 
     func testInputFallbackDebugFlagDefaultsToDisabled() {
         XCTAssertFalse(inputFallbackDebugEnabled(environment: [:]))
-        XCTAssertTrue(inputFallbackDebugEnabled(environment: ["OPEN_COMPUTER_USE_DEBUG_INPUT_FALLBACKS": "1"]))
-        XCTAssertTrue(inputFallbackDebugEnabled(environment: ["OPEN_COMPUTER_USE_DEBUG_INPUT_FALLBACKS": "true"]))
-        XCTAssertFalse(inputFallbackDebugEnabled(environment: ["OPEN_COMPUTER_USE_DEBUG_INPUT_FALLBACKS": "0"]))
-        XCTAssertFalse(inputFallbackDebugEnabled(environment: ["OPEN_COMPUTER_USE_DEBUG_INPUT_FALLBACKS": "off"]))
+        XCTAssertTrue(inputFallbackDebugEnabled(environment: ["OPEN_CU_DEBUG_INPUT_FALLBACKS": "1"]))
+        XCTAssertTrue(inputFallbackDebugEnabled(environment: ["OPEN_CU_DEBUG_INPUT_FALLBACKS": "true"]))
+        XCTAssertFalse(inputFallbackDebugEnabled(environment: ["OPEN_CU_DEBUG_INPUT_FALLBACKS": "0"]))
+        XCTAssertFalse(inputFallbackDebugEnabled(environment: ["OPEN_CU_DEBUG_INPUT_FALLBACKS": "off"]))
     }
 
     func testGlobalPointerFallbackFlagDefaultsToDisabled() {
         XCTAssertFalse(globalPointerFallbacksEnabled(environment: [:]))
-        XCTAssertTrue(globalPointerFallbacksEnabled(environment: ["OPEN_COMPUTER_USE_ALLOW_GLOBAL_POINTER_FALLBACKS": "1"]))
-        XCTAssertTrue(globalPointerFallbacksEnabled(environment: ["OPEN_COMPUTER_USE_ALLOW_GLOBAL_POINTER_FALLBACKS": "yes"]))
-        XCTAssertFalse(globalPointerFallbacksEnabled(environment: ["OPEN_COMPUTER_USE_ALLOW_GLOBAL_POINTER_FALLBACKS": "0"]))
-        XCTAssertFalse(globalPointerFallbacksEnabled(environment: ["OPEN_COMPUTER_USE_ALLOW_GLOBAL_POINTER_FALLBACKS": "false"]))
+        XCTAssertTrue(globalPointerFallbacksEnabled(environment: ["OPEN_CU_ALLOW_GLOBAL_POINTER_FALLBACKS": "1"]))
+        XCTAssertTrue(globalPointerFallbacksEnabled(environment: ["OPEN_CU_ALLOW_GLOBAL_POINTER_FALLBACKS": "yes"]))
+        XCTAssertFalse(globalPointerFallbacksEnabled(environment: ["OPEN_CU_ALLOW_GLOBAL_POINTER_FALLBACKS": "0"]))
+        XCTAssertFalse(globalPointerFallbacksEnabled(environment: ["OPEN_CU_ALLOW_GLOBAL_POINTER_FALLBACKS": "false"]))
     }
 
     func testSetValueAttributeGateMatchesOfficialSettableBoundary() throws {

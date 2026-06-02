@@ -443,7 +443,7 @@ enum OpenComputerUseFixtureMain {
 }
 
 private func fixtureHeadlessMode(environment: [String: String] = ProcessInfo.processInfo.environment) -> Bool {
-    switch environment["OPEN_COMPUTER_USE_FIXTURE_HEADLESS"]?.lowercased() {
+    switch environment["OPEN_CU_FIXTURE_HEADLESS"]?.lowercased() {
     case "1", "true", "yes", "on":
         return true
     default:

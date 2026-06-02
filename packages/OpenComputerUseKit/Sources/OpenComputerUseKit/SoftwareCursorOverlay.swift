@@ -25,7 +25,7 @@ public enum VisualCursorSupport {
 }
 
 func visualCursorEnabled(environment: [String: String]) -> Bool {
-    guard let rawValue = environment["OPEN_COMPUTER_USE_VISUAL_CURSOR"]?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() else {
+    guard let rawValue = environment["OPEN_CU_VISUAL_CURSOR"]?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() else {
         return true
     }
 
@@ -122,7 +122,7 @@ func visualCursorIdlePose(restingTipPosition: CGPoint, phase: CGFloat) -> Visual
 
 public func visualCursorObservationFileURL(environment: [String: String]) -> URL? {
     guard
-        let rawPath = environment["OPEN_COMPUTER_USE_VISUAL_CURSOR_OBSERVATION_FILE"]?
+        let rawPath = environment["OPEN_CU_VISUAL_CURSOR_OBSERVATION_FILE"]?
             .trimmingCharacters(in: .whitespacesAndNewlines),
         !rawPath.isEmpty
     else {

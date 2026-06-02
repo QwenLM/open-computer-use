@@ -3,13 +3,13 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cli="${OPEN_COMPUTER_USE_E2E_CLI:-${repo_root}/.build/debug/OpenComputerUse}"
-timeout_seconds="${OPEN_COMPUTER_USE_E2E_TIMEOUT_SECONDS:-3}"
-disable_app_agent_proxy="${OPEN_COMPUTER_USE_E2E_DISABLE_APP_AGENT_PROXY:-1}"
+cli="${OPEN_CU_E2E_CLI:-${repo_root}/.build/debug/OpenComputerUse}"
+timeout_seconds="${OPEN_CU_E2E_TIMEOUT_SECONDS:-3}"
+disable_app_agent_proxy="${OPEN_CU_E2E_DISABLE_APP_AGENT_PROXY:-1}"
 
 cd "${repo_root}"
 
-if [[ -z "${OPEN_COMPUTER_USE_E2E_CLI:-}" ]]; then
+if [[ -z "${OPEN_CU_E2E_CLI:-}" ]]; then
   swift build --product OpenComputerUse
 fi
 
@@ -18,7 +18,7 @@ if [[ ! -x "${cli}" ]]; then
     cli="$(command -v open-computer-use)"
   else
     echo "Missing executable: ${cli}" >&2
-    echo "Run swift build first, or set OPEN_COMPUTER_USE_E2E_CLI=/path/to/open-computer-use." >&2
+    echo "Run swift build first, or set OPEN_CU_E2E_CLI=/path/to/open-computer-use." >&2
     exit 1
   fi
 fi
@@ -33,7 +33,7 @@ echo "Using CLI: ${cli}"
 if [[ "${disable_app_agent_proxy}" == "1" || "${disable_app_agent_proxy}" == "true" || "${disable_app_agent_proxy}" == "yes" ]]; then
   echo "Using direct CLI permission checks (app-agent proxy disabled for this E2E)."
   run_cli() {
-    OPEN_COMPUTER_USE_DISABLE_APP_AGENT_PROXY=1 "${cli}" "$@"
+    OPEN_CU_DISABLE_APP_AGENT_PROXY=1 "${cli}" "$@"
   }
 else
   echo "Using default CLI app-agent proxy behavior."

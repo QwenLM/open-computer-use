@@ -5,9 +5,9 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 configuration="debug"
 arch_mode="native"
-codesign_mode="${OPEN_COMPUTER_USE_CODESIGN_MODE:-auto}"
-codesign_identity="${OPEN_COMPUTER_USE_CODESIGN_IDENTITY:-}"
-codesign_keychain="${OPEN_COMPUTER_USE_CODESIGN_KEYCHAIN:-}"
+codesign_mode="${OPEN_CU_CODESIGN_MODE:-auto}"
+codesign_identity="${OPEN_CU_CODESIGN_IDENTITY:-}"
+codesign_keychain="${OPEN_CU_CODESIGN_KEYCHAIN:-}"
 
 usage() {
   cat <<'EOF'
@@ -18,9 +18,9 @@ Examples:
   ./scripts/build-open-computer-use-app.sh --configuration release --arch universal
 
 Environment:
-  OPEN_COMPUTER_USE_CODESIGN_MODE=auto|identity|adhoc|none
-  OPEN_COMPUTER_USE_CODESIGN_IDENTITY="Developer ID Application: Example, Inc. (TEAMID)"
-  OPEN_COMPUTER_USE_CODESIGN_KEYCHAIN=/path/to/signing.keychain-db
+  OPEN_CU_CODESIGN_MODE=auto|identity|adhoc|none
+  OPEN_CU_CODESIGN_IDENTITY="Developer ID Application: Example, Inc. (TEAMID)"
+  OPEN_CU_CODESIGN_KEYCHAIN=/path/to/signing.keychain-db
 EOF
 }
 
@@ -69,7 +69,7 @@ if [[ "${arch_mode}" != "native" && "${arch_mode}" != "arm64" && "${arch_mode}" 
 fi
 
 if [[ "${codesign_mode}" != "auto" && "${codesign_mode}" != "identity" && "${codesign_mode}" != "adhoc" && "${codesign_mode}" != "none" ]]; then
-  echo "Unsupported OPEN_COMPUTER_USE_CODESIGN_MODE: ${codesign_mode}" >&2
+  echo "Unsupported OPEN_CU_CODESIGN_MODE: ${codesign_mode}" >&2
   exit 1
 fi
 
@@ -171,7 +171,7 @@ resolve_codesign_identity() {
       ;;
     identity)
       if [[ -z "${codesign_identity}" ]]; then
-        echo "OPEN_COMPUTER_USE_CODESIGN_IDENTITY is required when OPEN_COMPUTER_USE_CODESIGN_MODE=identity" >&2
+        echo "OPEN_CU_CODESIGN_IDENTITY is required when OPEN_CU_CODESIGN_MODE=identity" >&2
         exit 1
       fi
       printf '%s\n' "${codesign_identity}"
@@ -207,7 +207,7 @@ codesign_app_bundle() {
   local identity=""
 
   if ! identity="$(resolve_codesign_identity)"; then
-    echo "Skipping codesign for ${app_path} (OPEN_COMPUTER_USE_CODESIGN_MODE=none)" >&2
+    echo "Skipping codesign for ${app_path} (OPEN_CU_CODESIGN_MODE=none)" >&2
     return
   fi
 
@@ -234,7 +234,7 @@ codesign_app_bundle() {
 cd "${repo_root}"
 
 package_version="$(read_package_version)"
-bundle_version="${OPEN_COMPUTER_USE_BUNDLE_VERSION:-$(git -C "${repo_root}" rev-list --count HEAD 2>/dev/null || echo 1)}"
+bundle_version="${OPEN_CU_BUNDLE_VERSION:-$(git -C "${repo_root}" rev-list --count HEAD 2>/dev/null || echo 1)}"
 release_app_bundle_name="Open Computer Use.app"
 development_app_bundle_name="Open Computer Use (Dev).app"
 legacy_app_bundle_name="OpenComputerUse.app"

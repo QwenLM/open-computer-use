@@ -75,13 +75,13 @@ func TestCLIHelpMentionsWindowsRuntime(t *testing.T) {
 }
 
 func TestWindowsRuntimeForegroundActionsRequireOptIn(t *testing.T) {
-	if !strings.Contains(windowsRuntimeScript, "OPEN_COMPUTER_USE_WINDOWS_ALLOW_APP_LAUNCH") {
+	if !strings.Contains(windowsRuntimeScript, "OPEN_CU_WINDOWS_ALLOW_APP_LAUNCH") {
 		t.Fatal("Windows app launch fallback must remain opt-in")
 	}
-	if !strings.Contains(windowsRuntimeScript, "OPEN_COMPUTER_USE_WINDOWS_ALLOW_FOCUS_ACTIONS") {
+	if !strings.Contains(windowsRuntimeScript, "OPEN_CU_WINDOWS_ALLOW_FOCUS_ACTIONS") {
 		t.Fatal("Windows SetFocus action must remain opt-in")
 	}
-	if !strings.Contains(windowsRuntimeScript, "OPEN_COMPUTER_USE_WINDOWS_ALLOW_UIA_TEXT_FALLBACK") {
+	if !strings.Contains(windowsRuntimeScript, "OPEN_CU_WINDOWS_ALLOW_UIA_TEXT_FALLBACK") {
 		t.Fatal("Windows UIA text fallback must remain opt-in")
 	}
 	if !strings.Contains(serverInstructions, "does not auto-launch apps, perform SetFocus, or use UIA text fallback by default") {
