@@ -1789,4 +1789,117 @@ final class OpenComputerUseKitTests: XCTestCase {
         let height = try XCTUnwrap(properties[kCGImagePropertyPixelHeight] as? Int)
         return (width, height)
     }
+
+    // MARK: - ImageCaptureConfig
+
+    func testImageCaptureConfigDefaultsMatchHistoricalConstants() {
+        // The legacy module-level constants (captureTimeout=5, maxPNGBytes=900_000,
+        // maxDimension=1280, minScale=0.25) were the production behavior before
+        // env override support landed. ``defaults`` must preserve them so the
+        // no-env path is bit-identical to the previous release.
+        let defaults = ImageCaptureConfig.defaults
+        XCTAssertEqual(defaults.captureTimeout, 5)
+        XCTAssertEqual(defaults.maxPNGBytes, 900_000)
+        XCTAssertEqual(defaults.maxDimension, 1280)
+        XCTAssertEqual(defaults.minScale, 0.25)
+    }
+
+    func testImageCaptureConfigFromEmptyEnvironmentReturnsDefaults() {
+        XCTAssertEqual(ImageCaptureConfig.fromEnvironment([:]), ImageCaptureConfig.defaults)
+    }
+
+    func testImageCaptureConfigReadsAllFourVariables() {
+        let config = ImageCaptureConfig.fromEnvironment([
+            "OPEN_CU_IMAGE_CAPTURE_TIMEOUT": "8.5",
+            "OPEN_CU_IMAGE_MAX_BYTES": "262144",
+            "OPEN_CU_IMAGE_MAX_DIMENSION": "640",
+            "OPEN_CU_IMAGE_MIN_SCALE": "0.1",
+        ])
+        XCTAssertEqual(config.captureTimeout, 8.5)
+        XCTAssertEqual(config.maxPNGBytes, 262_144)
+        XCTAssertEqual(config.maxDimension, 640)
+        XCTAssertEqual(config.minScale, 0.1)
+    }
+
+    func testImageCaptureConfigPartialOverrideKeepsOtherDefaults() {
+        // Setting just one var must NOT zero out the others.
+        let config = ImageCaptureConfig.fromEnvironment([
+            "OPEN_CU_IMAGE_MAX_DIMENSION": "512",
+        ])
+        XCTAssertEqual(config.maxDimension, 512)
+        XCTAssertEqual(config.captureTimeout, ImageCaptureConfig.defaults.captureTimeout)
+        XCTAssertEqual(config.maxPNGBytes, ImageCaptureConfig.defaults.maxPNGBytes)
+        XCTAssertEqual(config.minScale, ImageCaptureConfig.defaults.minScale)
+    }
+
+    func testImageCaptureConfigIgnoresNonNumericValues() {
+        let config = ImageCaptureConfig.fromEnvironment([
+            "OPEN_CU_IMAGE_CAPTURE_TIMEOUT": "abc",
+            "OPEN_CU_IMAGE_MAX_BYTES": "not-a-number",
+            "OPEN_CU_IMAGE_MAX_DIMENSION": "",
+            "OPEN_CU_IMAGE_MIN_SCALE": "  ",
+        ])
+        XCTAssertEqual(config, ImageCaptureConfig.defaults)
+    }
+
+    func testImageCaptureConfigIgnoresZeroAndNegativeValues() {
+        // The downsampler treats <= 0 as "no budget at all" — a regression here
+        // would short-circuit `boundedScreenshotPNGData` to return nil and the
+        // model would receive no screenshot.
+        let config = ImageCaptureConfig.fromEnvironment([
+            "OPEN_CU_IMAGE_CAPTURE_TIMEOUT": "0",
+            "OPEN_CU_IMAGE_MAX_BYTES": "-1",
+            "OPEN_CU_IMAGE_MAX_DIMENSION": "-100",
+            "OPEN_CU_IMAGE_MIN_SCALE": "0",
+        ])
+        XCTAssertEqual(config, ImageCaptureConfig.defaults)
+    }
+
+    func testImageCaptureConfigClampsMinScaleAboveOne() {
+        // minScale is a downscale RATIO — values > 1 are nonsensical and
+        // would make the iteration loop give up before the first attempt.
+        let config = ImageCaptureConfig.fromEnvironment([
+            "OPEN_CU_IMAGE_MIN_SCALE": "2.0",
+        ])
+        XCTAssertEqual(config.minScale, ImageCaptureConfig.defaults.minScale)
+    }
+
+    func testImageCaptureConfigAcceptsMinScaleEqualToOne() {
+        // minScale=1 is degenerate but valid (means "do not downsample at
+        // all — accept whatever the encoded PNG byte count is"). The
+        // bounded function relies on this case being reachable.
+        let config = ImageCaptureConfig.fromEnvironment([
+            "OPEN_CU_IMAGE_MIN_SCALE": "1.0",
+        ])
+        XCTAssertEqual(config.minScale, 1)
+    }
+
+    func testImageCaptureConfigTrimsWhitespace() {
+        // Env vars sourced from shells or task runners often carry
+        // trailing whitespace; tolerate that gracefully.
+        let config = ImageCaptureConfig.fromEnvironment([
+            "OPEN_CU_IMAGE_MAX_BYTES": "  500000  ",
+            "OPEN_CU_IMAGE_MAX_DIMENSION": "\t720\n",
+        ])
+        XCTAssertEqual(config.maxPNGBytes, 500_000)
+        XCTAssertEqual(config.maxDimension, 720)
+    }
+
+    func testBoundedScreenshotPNGDataHonorsCustomBudget() throws {
+        // Verify the env path is end-to-end: pass a tight budget through
+        // ImageCaptureConfig and confirm the resulting PNG honors it.
+        let image = try makeSolidTestImage(width: 1600, height: 1200)
+        let config = ImageCaptureConfig.fromEnvironment([
+            "OPEN_CU_IMAGE_MAX_DIMENSION": "320",
+            "OPEN_CU_IMAGE_MIN_SCALE": "0.05",
+        ])
+        let data = try XCTUnwrap(boundedScreenshotPNGData(
+            for: image,
+            maxBytes: config.maxPNGBytes,
+            maxDimension: config.maxDimension,
+            minScale: config.minScale
+        ))
+        let size = try imageSize(in: data)
+        XCTAssertLessThanOrEqual(max(size.width, size.height), 320)
+    }
 }

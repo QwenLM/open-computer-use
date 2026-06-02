@@ -135,6 +135,23 @@ open-computer-use doctor
 open-computer-use -h
 ```
 
+## Configuration
+
+### Image capture (macOS)
+
+The `get_app_state` screenshot and the post-action screenshots attached to every action tool can be tuned through environment variables read at capture time. All variables are optional; unset / non-numeric / out-of-range values fall back to the built-in defaults.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `OPEN_CU_IMAGE_CAPTURE_TIMEOUT` | `5` | Seconds to wait for `SCScreenshotManager.captureImage` before giving up. The MCP result still includes the accessibility tree on timeout; only the `image` block is dropped. Positive float. |
+| `OPEN_CU_IMAGE_MAX_BYTES` | `900000` | Byte budget for the encoded PNG. The downsampler iterates `scale *= 0.85` until the encoded data fits this budget OR `OPEN_CU_IMAGE_MIN_SCALE` is reached. Positive integer. |
+| `OPEN_CU_IMAGE_MAX_DIMENSION` | `1280` | Long-edge pixel cap for the returned PNG. The initial scale is `min(1, OPEN_CU_IMAGE_MAX_DIMENSION / largestNativeDimension)`. Positive float. |
+| `OPEN_CU_IMAGE_MIN_SCALE` | `0.25` | Lower bound on the downsample ratio. Once the iterative loop drops below this, the largest in-budget result so far is returned even if it exceeds `OPEN_CU_IMAGE_MAX_BYTES`. Float in `(0, 1]`. |
+
+Coordinate accuracy is preserved across any downsampling — coordinate tools (`click`, `drag`, `scroll`) read the actual pixel dimensions back from the returned PNG and rescale model-supplied coordinates against the live window bounds.
+
+These variables only affect macOS today. The Windows and Linux runtimes return native-size PNGs without downsampling.
+
 ## Cursor Motion
 
 Cursor Motion is an open-source cursor motion system for macOS, based on public information shared by members of the Software.Inc team. You can download the app from the [Releases page](https://github.com/iFurySt/open-codex-computer-use/releases).

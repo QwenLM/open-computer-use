@@ -39,10 +39,106 @@ enum SnapshotMode {
 
 let accessibilityTreeMaxNodeCount = 1200
 let accessibilityTreeMaxDepth = 64
-let screenshotCaptureTimeout: TimeInterval = 5
-let screenshotResultMaxPNGBytes = 900_000
-let screenshotResultMaxDimension: CGFloat = 1280
-let screenshotResultMinScale: CGFloat = 0.25
+
+/// Per-snapshot image capture + downsampling parameters.
+///
+/// Resolved from environment variables on each `get_app_state` capture
+/// so operators can tune image size without rebuilding. Unset / invalid
+/// vars fall back to ``defaults``.
+///
+/// Recognized variables (all optional, all read at capture time):
+///   - `OPEN_CU_IMAGE_CAPTURE_TIMEOUT` — `SCScreenshotManager.captureImage`
+///     wait seconds. Positive float. Default 5.
+///   - `OPEN_CU_IMAGE_MAX_BYTES` — PNG byte budget after encoding.
+///     Downsampling iterates until the result fits this budget OR
+///     ``minScale`` is reached. Positive integer. Default 900_000.
+///   - `OPEN_CU_IMAGE_MAX_DIMENSION` — long-edge pixel cap. The initial
+///     scale is `min(1, maxDimension / largestImageDimension)`.
+///     Positive float. Default 1280.
+///   - `OPEN_CU_IMAGE_MIN_SCALE` — minimum downscale ratio the iteration
+///     loop is allowed to reach before giving up. Float in (0, 1].
+///     Default 0.25.
+///
+/// Coordinate accuracy is preserved across any downsampling because the
+/// click/drag tools read the PNG's actual pixel dimensions back from
+/// the returned bytes and rescale model-supplied coordinates against
+/// the live window bounds — see `screenshotPixelToWindowPoint`.
+public struct ImageCaptureConfig: Sendable, Equatable {
+    public let captureTimeout: TimeInterval
+    public let maxPNGBytes: Int
+    public let maxDimension: CGFloat
+    public let minScale: CGFloat
+
+    public init(
+        captureTimeout: TimeInterval,
+        maxPNGBytes: Int,
+        maxDimension: CGFloat,
+        minScale: CGFloat
+    ) {
+        self.captureTimeout = captureTimeout
+        self.maxPNGBytes = maxPNGBytes
+        self.maxDimension = maxDimension
+        self.minScale = minScale
+    }
+
+    /// Hardcoded fallback used when no env override is present.
+    public static let defaults = ImageCaptureConfig(
+        captureTimeout: 5,
+        maxPNGBytes: 900_000,
+        maxDimension: 1280,
+        minScale: 0.25
+    )
+
+    /// Read overrides from the given environment dictionary. Falls back
+    /// to ``defaults`` for any variable that is unset, non-numeric, or
+    /// out of valid range.
+    public static func fromEnvironment(
+        _ environment: [String: String] = ProcessInfo.processInfo.environment
+    ) -> ImageCaptureConfig {
+        let captureTimeout = parseImageConfigPositiveDouble(environment["OPEN_CU_IMAGE_CAPTURE_TIMEOUT"])
+            ?? defaults.captureTimeout
+        let maxPNGBytes = parseImageConfigPositiveInt(environment["OPEN_CU_IMAGE_MAX_BYTES"])
+            ?? defaults.maxPNGBytes
+        let maxDimension: CGFloat = parseImageConfigPositiveDouble(environment["OPEN_CU_IMAGE_MAX_DIMENSION"])
+            .map { CGFloat($0) } ?? defaults.maxDimension
+        let minScale: CGFloat = parseImageConfigUnitInterval(environment["OPEN_CU_IMAGE_MIN_SCALE"])
+            .map { CGFloat($0) } ?? defaults.minScale
+        return ImageCaptureConfig(
+            captureTimeout: captureTimeout,
+            maxPNGBytes: maxPNGBytes,
+            maxDimension: maxDimension,
+            minScale: minScale
+        )
+    }
+}
+
+private func parseImageConfigPositiveInt(_ raw: String?) -> Int? {
+    guard let raw = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty,
+          let value = Int(raw), value > 0
+    else {
+        return nil
+    }
+    return value
+}
+
+private func parseImageConfigPositiveDouble(_ raw: String?) -> Double? {
+    guard let raw = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty,
+          let value = Double(raw), value > 0, value.isFinite
+    else {
+        return nil
+    }
+    return value
+}
+
+private func parseImageConfigUnitInterval(_ raw: String?) -> Double? {
+    guard let raw = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty,
+          let value = Double(raw), value > 0, value <= 1, value.isFinite
+    else {
+        return nil
+    }
+    return value
+}
+
 private let windowVisibilityRecoveryDelay: TimeInterval = 0.7
 private let axWebAreaRole = "AXWebArea"
 private let axContentsAttribute = "AXContents"
@@ -394,7 +490,7 @@ private struct WindowCapture {
     }
 
     private static func captureImage(windowID: CGWindowID, bounds: CGRect) -> CGImage? {
-        try? BlockingAsyncBridge.run(timeout: screenshotCaptureTimeout) {
+        try? BlockingAsyncBridge.run(timeout: ImageCaptureConfig.fromEnvironment().captureTimeout) {
             let shareableContent = try await SCShareableContent.current
             guard let window = shareableContent.windows.first(where: { $0.windowID == windowID }) else {
                 return nil
@@ -425,7 +521,13 @@ private struct WindowCapture {
             return nil
         }
 
-        return boundedScreenshotPNGData(for: image)
+        let config = ImageCaptureConfig.fromEnvironment()
+        return boundedScreenshotPNGData(
+            for: image,
+            maxBytes: config.maxPNGBytes,
+            maxDimension: config.maxDimension,
+            minScale: config.minScale
+        )
     }
 }
 
@@ -472,9 +574,9 @@ func preferredWindowCaptureCandidate(_ candidates: [WindowCaptureCandidate], tit
 
 func boundedScreenshotPNGData(
     for image: CGImage,
-    maxBytes: Int = screenshotResultMaxPNGBytes,
-    maxDimension: CGFloat = screenshotResultMaxDimension,
-    minScale: CGFloat = screenshotResultMinScale
+    maxBytes: Int = ImageCaptureConfig.defaults.maxPNGBytes,
+    maxDimension: CGFloat = ImageCaptureConfig.defaults.maxDimension,
+    minScale: CGFloat = ImageCaptureConfig.defaults.minScale
 ) -> Data? {
     guard image.width > 0, image.height > 0, maxBytes > 0 else {
         return nil

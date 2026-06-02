@@ -131,6 +131,23 @@ open-computer-use doctor
 open-computer-use -h
 ```
 
+## 配置
+
+### 截图捕获（macOS）
+
+`get_app_state` 以及所有 action tool 跟在动作后面回带的截图，都可以通过环境变量在每次 capture 时动态读取调整。所有变量都是可选的；缺失、非数字或越界值都会回落到内置默认值。
+
+| 变量 | 默认值 | 含义 |
+|---|---|---|
+| `OPEN_CU_IMAGE_CAPTURE_TIMEOUT` | `5` | `SCScreenshotManager.captureImage` 的等待秒数，超时后 a11y 树仍会返回，只丢 `image` block。正浮点数。 |
+| `OPEN_CU_IMAGE_MAX_BYTES` | `900000` | PNG 编码后字节预算。降采样会以 `scale *= 0.85` 迭代直到字节数符合预算，或触及 `OPEN_CU_IMAGE_MIN_SCALE` 下限。正整数。 |
+| `OPEN_CU_IMAGE_MAX_DIMENSION` | `1280` | 返回 PNG 的长边像素上限。初始 scale = `min(1, OPEN_CU_IMAGE_MAX_DIMENSION / 原图最大边长度)`。正浮点数。 |
+| `OPEN_CU_IMAGE_MIN_SCALE` | `0.25` | 降采样比例的下限。一旦迭代低于这个值就停下，返回目前最接近预算的结果（哪怕仍超 `OPEN_CU_IMAGE_MAX_BYTES`）。`(0, 1]` 区间的浮点数。 |
+
+任何降采样都不会破坏点击精度——坐标 tool（`click` / `drag` / `scroll`）会从返回的 PNG 字节里读出实际像素尺寸，按当前窗口 bounds 比例反算模型提供的坐标。
+
+这些变量目前只影响 macOS。Windows 和 Linux runtime 返回原生尺寸 PNG，不做降采样。
+
 ## Cursor Motion
 
 Cursor Motion 是一个面向 macOS 的开源光标运动系统，基于 Software.Inc 几位大佬的公开信息实现的开源版本，也可以到 [Releases 页面](https://github.com/iFurySt/open-codex-computer-use/releases) 下载 app 运行。
