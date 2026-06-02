@@ -31,9 +31,7 @@
 当前 release 流水线会产出：
 
 - `dist/release/release-manifest.json`
-- `dist/release/npm/open-computer-use-<version>.tgz`
-- `dist/release/npm/open-computer-use-mcp-<version>.tgz`
-- `dist/release/npm/open-codex-computer-use-mcp-<version>.tgz`
+- `dist/release/npm/@qwen-code/open-computer-use-<version>.tgz`
 - `dist/release/cursor-motion/CursorMotion-<version>.dmg`
 - GitHub Actions 中上传的 npm release artifact
 - GitHub Releases 中和 tag 对齐的 `CursorMotion-<version>.dmg`

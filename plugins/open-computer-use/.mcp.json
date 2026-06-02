@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "open-computer-use": {
-      "command": "./scripts/launch-open-computer-use.sh",
-      "cwd": "."
-    }
-  }
-}

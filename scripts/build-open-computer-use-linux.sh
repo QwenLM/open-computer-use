@@ -54,7 +54,7 @@ case "${arch}" in
     ;;
 esac
 
-version="$(node -e "console.log(require('./plugins/open-computer-use/.codex-plugin/plugin.json').version)")"
+version="$(node -e "console.log(require('./package.json').version)")"
 module_dir="${repo_root}/apps/OpenComputerUseLinux"
 output_dir="${out_dir}/${arch}"
 mkdir -p "${output_dir}"

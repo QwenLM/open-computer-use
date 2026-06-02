@@ -223,9 +223,7 @@ const installCommands = new Map([
   ["install-claude-mcp", "install-claude-mcp.sh"],
   ["install-clauce-mcp", "install-claude-mcp.sh"],
   ["install-gemini-mcp", "install-gemini-mcp.sh"],
-  ["install-codex-mcp", "install-codex-mcp.sh"],
   ["install-opencode-mcp", "install-opencode-mcp.sh"],
-  ["install-codex-plugin", "install-codex-plugin.sh"],
 ]);
 
 function printLauncherHelp() {
@@ -244,9 +242,7 @@ Commands:
   turn-ended           Notify the running MCP process that the host turn ended.
   install-claude-mcp   Install the MCP server into ~/.claude.json for this project.
   install-gemini-mcp   Install the MCP server into Gemini CLI config.
-  install-codex-mcp    Install the MCP server into ~/.codex/config.toml.
   install-opencode-mcp Install the MCP server into ~/.config/opencode.
-  install-codex-plugin Install this npm package into the local Codex plugin cache.
   help [command]       Show general or command-specific help.
   version              Print the CLI version.
 
@@ -336,16 +332,6 @@ if (command === "-h" || command === "--help" || (command === "help" && args.leng
   process.exit(0);
 }
 
-if (command === "help" && args[1] === "install-codex-plugin") {
-  printInstallHelp("install-codex-plugin.sh", "open-computer-use install-codex-plugin");
-  process.exit(0);
-}
-
-if (command === "help" && args[1] === "install-codex-mcp") {
-  printInstallHelp("install-codex-mcp.sh", "open-computer-use install-codex-mcp");
-  process.exit(0);
-}
-
 if (command === "help" && args[1] === "install-gemini-mcp") {
   printInstallHelp("install-gemini-mcp.sh", "open-computer-use install-gemini-mcp [--scope project|user]");
   process.exit(0);
@@ -384,7 +370,7 @@ const lines = [
   "",
   "Installed ${packageName}@${version}.",
   "Package: https://www.npmjs.com/package/${packageName}",
-  "Commands: open-computer-use, open-computer-use-mcp, open-codex-computer-use-mcp",
+  "Commands: open-computer-use, open-computer-use-mcp",
   "Native runtime will be selected from bundled artifacts for " + process.platform + "-" + process.arch + ".",
   "",
   "Next:",
@@ -415,7 +401,6 @@ Global command aliases:
 
 - \`open-computer-use\`
 - \`open-computer-use-mcp\`
-- \`open-codex-computer-use-mcp\`
 
 ## Install
 
@@ -457,9 +442,7 @@ open-computer-use doctor
 open-computer-use install-claude-mcp
 open-computer-use install-gemini-mcp
 open-computer-use install-gemini-mcp --scope user
-open-computer-use install-codex-mcp
 open-computer-use install-opencode-mcp
-open-computer-use install-codex-plugin
 \`\`\`
 
 ## Notes
@@ -477,7 +460,6 @@ Source repository: https://github.com/QwenLM/open-computer-use
 function packageKeywords(extraKeywords = []) {
   return [
     "computer-use",
-    "codex",
     "mcp",
     "macos",
     "linux",
@@ -509,7 +491,6 @@ function renderMetaPackageJson(packageName, version) {
     bin: {
       "open-computer-use": "bin/open-computer-use",
       "open-computer-use-mcp": "bin/open-computer-use-mcp",
-      "open-codex-computer-use-mcp": "bin/open-codex-computer-use-mcp",
     },
     scripts: {
       postinstall: "node ./scripts/postinstall.mjs",
@@ -520,16 +501,10 @@ function renderMetaPackageJson(packageName, version) {
       "dist/Open Computer Use.app/",
       "dist/linux/",
       "dist/windows/",
-      "plugins/open-computer-use/.codex-plugin/",
-      "plugins/open-computer-use/.mcp.json",
-      "plugins/open-computer-use/assets/",
-      "plugins/open-computer-use/scripts/",
       "scripts/install-claude-mcp.sh",
       "scripts/install-gemini-mcp.sh",
       "scripts/install-config-helper.mjs",
-      "scripts/install-codex-mcp.sh",
       "scripts/install-opencode-mcp.sh",
-      "scripts/install-codex-plugin.sh",
       "scripts/postinstall.mjs",
       "README.md",
       "LICENSE",
@@ -541,16 +516,12 @@ function copyInstallerScripts(packageRoot) {
   cpSync(path.join(repoRoot, "scripts", "install-claude-mcp.sh"), path.join(packageRoot, "scripts", "install-claude-mcp.sh"));
   cpSync(path.join(repoRoot, "scripts", "install-gemini-mcp.sh"), path.join(packageRoot, "scripts", "install-gemini-mcp.sh"));
   cpSync(path.join(repoRoot, "scripts", "install-config-helper.mjs"), path.join(packageRoot, "scripts", "install-config-helper.mjs"));
-  cpSync(path.join(repoRoot, "scripts", "install-codex-mcp.sh"), path.join(packageRoot, "scripts", "install-codex-mcp.sh"));
   cpSync(path.join(repoRoot, "scripts", "install-opencode-mcp.sh"), path.join(packageRoot, "scripts", "install-opencode-mcp.sh"));
-  cpSync(path.join(repoRoot, "scripts", "install-codex-plugin.sh"), path.join(packageRoot, "scripts", "install-codex-plugin.sh"));
 
   for (const scriptName of [
     "install-claude-mcp.sh",
     "install-gemini-mcp.sh",
-    "install-codex-mcp.sh",
     "install-opencode-mcp.sh",
-    "install-codex-plugin.sh",
   ]) {
     chmodSync(path.join(packageRoot, "scripts", scriptName), 0o755);
   }
@@ -594,13 +565,9 @@ function stageMetaPackage(packageName, version, outDir) {
   mkdirSync(path.join(packageRoot, ".agents", "plugins"), { recursive: true });
   mkdirSync(path.join(packageRoot, "bin"), { recursive: true });
   mkdirSync(path.join(packageRoot, "dist"), { recursive: true });
-  mkdirSync(path.join(packageRoot, "plugins"), { recursive: true });
   mkdirSync(path.join(packageRoot, "scripts"), { recursive: true });
 
   cpSync(path.join(repoRoot, ".agents", "plugins", "marketplace.json"), path.join(packageRoot, ".agents", "plugins", "marketplace.json"));
-  cpSync(path.join(repoRoot, "plugins", "open-computer-use"), path.join(packageRoot, "plugins", "open-computer-use"), {
-    recursive: true,
-  });
   cpSync(path.join(repoRoot, "LICENSE"), path.join(packageRoot, "LICENSE"));
   copyBundledRuntimes(packageRoot, packageName);
   copyInstallerScripts(packageRoot);
@@ -608,7 +575,6 @@ function stageMetaPackage(packageName, version, outDir) {
   const launcher = renderLauncher();
   writeExecutable(path.join(packageRoot, "bin", "open-computer-use"), launcher);
   writeExecutable(path.join(packageRoot, "bin", "open-computer-use-mcp"), launcher);
-  writeExecutable(path.join(packageRoot, "bin", "open-codex-computer-use-mcp"), launcher);
   writeFileSync(path.join(packageRoot, "scripts", "postinstall.mjs"), renderPostinstall(packageName, version), "utf-8");
   writeFileSync(path.join(packageRoot, "README.md"), renderReadme(packageName, version), "utf-8");
   writeFileSync(path.join(packageRoot, "package.json"), `${JSON.stringify(renderMetaPackageJson(packageName, version), null, 2)}\n`, "utf-8");
@@ -626,8 +592,7 @@ function stagePackage(packageName, version, outDir) {
 
 function main() {
   const options = parseArgs(process.argv.slice(2));
-  const pluginManifestPath = path.join(repoRoot, "plugins", "open-computer-use", ".codex-plugin", "plugin.json");
-  const { version } = readJSON(pluginManifestPath);
+  const { version } = readJSON(path.join(repoRoot, "package.json"));
 
   if (!options.skipBuild) {
     ensureBuilt(options.configuration, options.arch);

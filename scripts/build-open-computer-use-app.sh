@@ -74,15 +74,7 @@ if [[ "${codesign_mode}" != "auto" && "${codesign_mode}" != "identity" && "${cod
 fi
 
 read_package_version() {
-  python3 - "${repo_root}/plugins/open-computer-use/.codex-plugin/plugin.json" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], "r", encoding="utf-8") as fh:
-    manifest = json.load(fh)
-
-print(manifest["version"])
-PY
+  node -e "console.log(require('${repo_root}/package.json').version)"
 }
 
 build_binary() {

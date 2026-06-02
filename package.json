@@ -1,5 +1,6 @@
 {
   "name": "open-computer-use-repo-tools",
+  "version": "0.1.51",
   "private": true,
   "type": "module",
   "scripts": {

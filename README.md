@@ -4,28 +4,16 @@
 
 [![English](https://img.shields.io/badge/English-Click-yellow)](./README.md)
 [![简体中文](https://img.shields.io/badge/简体中文-点击查看-orange)](./README.zh-CN.md)
-[![Release](https://img.shields.io/github/v/release/iFurySt/open-codex-computer-use)](https://github.com/iFurySt/open-codex-computer-use/releases)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/iFurySt/open-codex-computer-use)
-<a href="https://llmapis.com?source=https%3A%2F%2Fgithub.com%2FiFurySt%2Fopen-codex-computer-use" target="_blank"><img src="https://llmapis.com/api/badge/iFurySt/open-codex-computer-use" alt="LLMAPIS" width="20" /></a>
-
-> [!TIP]
-> Interested in Browser Use? Check out [open-browser-use](https://github.com/iFurySt/open-codex-browser-use).
 
 ---
 
 `open-computer-use` is an open-source `Computer Use` service wrapped as `MCP`. Any AI agent or MCP client can use it to run Computer Use on macOS, Linux, and Windows.
 
-This project was inspired by OpenAI's [Codex Computer Use](https://openai.com/index/codex-for-almost-everything/). It showed that non-intrusive CUA can be built on top of Accessibility, so I decided to build an open-source version.
+Originally inspired by reverse-engineering work on macOS's accessibility-driven computer-use patterns. This QwenLM fork is maintained for the Qwen Code agent's built-in desktop automation.
 
 I started this repo with my [harness template](https://github.com/iFurySt/harness-template), a template for quickly spinning up AI-first projects. It has been one of our most useful workflows lately, especially for nearly 100% AI-generated projects. I also wrote [a post](https://www.ifuryst.com/blog/2026/speedrunning-the-ai-era/) about the methodology behind it.
 
 ## Demos
-
-### Codex App and Codex CLI
-
-[![Open Computer Use custom demo cover](./docs/generated/readme-assets/open-computer-use-demo-cover.png)](https://youtu.be/2s6aVpGiwaQ)
-
-<sub><em>`open-computer-use` used as Computer Use in Codex App and Codex CLI, matching the official experience.</em></sub>
 
 ### Gemini CLI
 
@@ -54,8 +42,8 @@ open-computer-use
 Before using it, install it into your agent:
 
 ```bash
-# Install into Codex by writing to ~/.codex/config.toml
-open-computer-use install-codex-mcp
+# Install into Claude Code by writing to ~/.claude.json
+open-computer-use install-claude-mcp
 ```
 
 Or add it to your own client manually:
@@ -75,19 +63,13 @@ Or add it to your own client manually:
 
 Install the skill directly:
 
-```bash
-# Install for Codex
-npx skills add iFurySt/open-codex-computer-use -g -a codex --skill open-computer-use -y
-npx skills ls -g -a codex | rg 'open-computer-use'
-```
-
 Install for Claude Code:
 
 ```bash
-npx skills add iFurySt/open-codex-computer-use -g -a claude-code --skill open-computer-use -y
+npx skills add QwenLM/open-computer-use -g -a claude-code --skill open-computer-use -y
 ```
 
-Update an existing global install, including the Codex install created above:
+Update an existing global install:
 
 ```bash
 npx skills update open-computer-use -g -y
@@ -101,12 +83,6 @@ You can also manually download and install the
 Besides the MCP JSON config above, you can also use the built-in commands:
 
 ```bash
-# Install into Codex by writing to ~/.codex/config.toml
-open-computer-use install-codex-mcp
-
-# Install as a Codex plugin, mainly for Codex App
-open-computer-use install-codex-plugin
-
 # Install into Claude Code by writing to ~/.claude.json
 open-computer-use install-claude-mcp
 
@@ -154,17 +130,17 @@ These variables only affect macOS today. The Windows and Linux runtimes return n
 
 ## Cursor Motion
 
-Cursor Motion is an open-source cursor motion system for macOS, based on public information shared by members of the Software.Inc team. You can download the app from the [Releases page](https://github.com/iFurySt/open-codex-computer-use/releases).
+Cursor Motion is an open-source cursor motion system for macOS, based on public information shared by members of the Software.Inc team. You can download the app from the [Releases page](https://github.com/QwenLM/open-computer-use/releases).
 
 [![Cursor Motion custom demo cover](./docs/generated/readme-assets/cursor-motion-demo-cover.png)](https://youtu.be/KRUq5GUHv1Q)
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=iFurySt%2Fopen-codex-computer-use&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=QwenLM%2Fopen-computer-use&type=date&legend=top-left">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ifuryst/open-codex-computer-use&type=date&theme=dark&legend=top-left" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ifuryst/open-codex-computer-use&type=date&legend=top-left" />
-    <img alt="Star History Chart for open-computer-use" src="https://api.star-history.com/chart?repos=ifuryst/open-codex-computer-use&type=date&legend=top-left" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=QwenLM/open-computer-use&type=date&theme=dark&legend=top-left" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=QwenLM/open-computer-use&type=date&legend=top-left" />
+    <img alt="Star History Chart for open-computer-use" src="https://api.star-history.com/chart?repos=QwenLM/open-computer-use&type=date&legend=top-left" />
   </picture>
 </a>
 

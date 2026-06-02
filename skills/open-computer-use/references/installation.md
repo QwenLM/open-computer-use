@@ -42,17 +42,10 @@ Windows and Linux do not use this macOS onboarding step, but they still need a l
 Use the built-in installers when they match the user's agent:
 
 ```sh
-open-computer-use install-codex-mcp
 open-computer-use install-claude-mcp
 open-computer-use install-gemini-mcp
 open-computer-use install-gemini-mcp --scope user
 open-computer-use install-opencode-mcp
-```
-
-Codex App can also use the plugin installer:
-
-```sh
-open-computer-use install-codex-plugin
 ```
 
 For any other MCP client, add a stdio server manually:

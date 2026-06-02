@@ -23,8 +23,6 @@
 
 ## 当前参考
 
-- `docs/references/codex-computer-use-reverse-engineering/software-cursor-overlay.md`
-- `docs/references/codex-computer-use-reverse-engineering/software-cursor-motion-model.md`
 - `docs/exec-plans/active/20260418-standalone-cursor-lab.md`
 
 ## 当前状态

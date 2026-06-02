@@ -7,7 +7,7 @@ description: Platform-neutral guidance for using Open Computer Use, the open-sou
 
 ## Overview
 
-Open Computer Use exposes Computer Use as a local CLI and stdio MCP server. It is not Codex.app-specific; adapt the commands and MCP config to the agent runtime you are operating in.
+Open Computer Use exposes Computer Use as a local CLI and stdio MCP server, usable by any agent runtime.
 
 It supports the same core tool surface across macOS, Linux, and Windows:
 `list_apps`, `get_app_state`, `click`, `perform_secondary_action`, `scroll`,
@@ -28,7 +28,7 @@ It supports the same core tool surface across macOS, Linux, and Windows:
 
 - Treat the target desktop as the user's real session. Do not inspect password managers, unrelated private content, or sensitive apps unless the user explicitly asked for that task.
 - Ask before sending, deleting, purchasing, approving, uploading, or making other externally visible changes.
-- Do not assume Codex.app plugin helpers are available. Use the installed `open-computer-use` CLI or an explicit MCP config.
+- Always use the installed `open-computer-use` CLI or an explicit MCP config; do not assume host-specific plugin helpers exist.
 - Always run `get_app_state` before using `element_index`; do not guess indexes across sessions or after large UI changes.
 - Prefer semantic actions and `set_value` for editable controls. Use coordinate `click`, `scroll`, and `drag` only when the element tree does not expose a safer target.
 - On macOS, do not enable `OPEN_CU_ALLOW_GLOBAL_POINTER_FALLBACKS=1` unless the user explicitly wants diagnostic behavior that may move the real pointer.
