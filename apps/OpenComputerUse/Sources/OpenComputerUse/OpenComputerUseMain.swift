@@ -54,6 +54,10 @@ enum OpenComputerUseMain {
             if !permissions.missingPermissions.isEmpty {
                 PermissionOnboardingApp.launch()
             }
+        case .permissionStatus:
+            // Status only — never launches onboarding. Safe to poll while
+            // waiting for the user to grant permissions.
+            print(PermissionDiagnostics.current().summary)
         case .listApps:
             let service = ComputerUseService()
             print(service.listApps().primaryText ?? "")

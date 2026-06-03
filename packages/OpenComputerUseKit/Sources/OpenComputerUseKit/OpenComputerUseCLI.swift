@@ -4,6 +4,7 @@ public enum OpenComputerUseCLICommand: Equatable {
     case launchOnboarding
     case mcp
     case doctor
+    case permissionStatus
     case listApps
     case snapshot(app: String)
     case call(OpenComputerUseCallInvocation)
@@ -32,7 +33,7 @@ public func shouldUseMacOSAppAgentProxy(
     switch command {
     case .launchOnboarding:
         return !runningFromLaunchServicesAppInstance
-    case .mcp, .doctor, .listApps, .snapshot, .call:
+    case .mcp, .doctor, .permissionStatus, .listApps, .snapshot, .call:
         return true
     case .turnEnded, .help, .version:
         return false
@@ -78,6 +79,8 @@ public func parseOpenComputerUseCLI(arguments: [String]) throws -> OpenComputerU
         return try parseSimpleCommand(name: "mcp", arguments: Array(arguments.dropFirst()), result: .mcp)
     case "doctor":
         return try parseSimpleCommand(name: "doctor", arguments: Array(arguments.dropFirst()), result: .doctor)
+    case "permission-status":
+        return try parseSimpleCommand(name: "permission-status", arguments: Array(arguments.dropFirst()), result: .permissionStatus)
     case "list-apps":
         return try parseSimpleCommand(name: "list-apps", arguments: Array(arguments.dropFirst()), result: .listApps)
     case "call":
@@ -108,6 +111,7 @@ public func openComputerUseHelpText(command: String? = nil) -> String {
         Commands:
           mcp                  Start the stdio MCP server.
           doctor               Print permission status and launch onboarding if needed.
+          permission-status    Print permission status only; never launches onboarding.
           list-apps            Print running or recently used apps.
           snapshot <app>       Print the current accessibility snapshot for an app.
           call <tool>           Call one tool, or run a JSON array of tool calls.
@@ -137,6 +141,16 @@ public func openComputerUseHelpText(command: String? = nil) -> String {
 
         Print the current Accessibility and Screen Recording permission state.
         If permissions are missing, this also launches the onboarding app.
+        """
+    case "permission-status":
+        return """
+        Usage:
+          open-computer-use permission-status
+
+        Print the current Accessibility and Screen Recording permission state
+        and exit. Unlike `doctor`, this never launches the onboarding app, so it
+        is safe to poll repeatedly (e.g. while waiting for the user to grant
+        permissions) without spawning onboarding windows.
         """
     case "list-apps":
         return """

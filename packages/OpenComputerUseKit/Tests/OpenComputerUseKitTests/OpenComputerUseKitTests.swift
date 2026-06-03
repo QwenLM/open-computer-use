@@ -18,6 +18,20 @@ final class OpenComputerUseKitTests: XCTestCase {
         XCTAssertEqual(try parseOpenComputerUseCLI(arguments: ["call", "--help"]), .help(command: "call"))
     }
 
+    func testCLIRecognizesPermissionStatusCommand() throws {
+        XCTAssertEqual(
+            try parseOpenComputerUseCLI(arguments: ["permission-status"]),
+            .permissionStatus
+        )
+        XCTAssertEqual(
+            try parseOpenComputerUseCLI(arguments: ["permission-status", "-h"]),
+            .help(command: "permission-status")
+        )
+        XCTAssertThrowsError(
+            try parseOpenComputerUseCLI(arguments: ["permission-status", "extra"])
+        )
+    }
+
     func testCLIRecognizesSingleToolCallCommand() throws {
         XCTAssertEqual(
             try parseOpenComputerUseCLI(arguments: ["call", "list_apps"]),
@@ -232,6 +246,7 @@ final class OpenComputerUseKitTests: XCTestCase {
         for command in [
             OpenComputerUseCLICommand.mcp,
             .doctor,
+            .permissionStatus,
             .listApps,
             .snapshot(app: "TextEdit"),
             .call(.single(toolName: "list_apps", argumentsJSON: nil, argumentsFile: nil)),

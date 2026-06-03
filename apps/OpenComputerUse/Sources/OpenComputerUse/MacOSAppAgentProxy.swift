@@ -380,6 +380,15 @@ private final class AppAgentConnection: @unchecked Sendable {
                 }
                 return CLIProxyResponse(stdout: permissions.summary + "\n", stderr: "", exitCode: EXIT_SUCCESS)
 
+            case .permissionStatus:
+                // Status only — read the resident agent's permission state and
+                // return it WITHOUT presenting the onboarding window. This is
+                // the window-free probe the host polls while waiting for the
+                // user to grant permissions (doctor would re-present a window
+                // on every poll).
+                let permissions = PermissionDiagnostics.current()
+                return CLIProxyResponse(stdout: permissions.summary + "\n", stderr: "", exitCode: EXIT_SUCCESS)
+
             case .listApps:
                 let service = ComputerUseService()
                 return CLIProxyResponse(stdout: (service.listApps().primaryText ?? "") + "\n", stderr: "", exitCode: EXIT_SUCCESS)
