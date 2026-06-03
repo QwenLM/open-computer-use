@@ -584,7 +584,14 @@ func boundedScreenshotPNGData(
 
     let original = pngData(for: image)
     let largestDimension = CGFloat(max(image.width, image.height))
-    var scale = min(1, maxDimension / largestDimension)
+    // Honor maxDimension, but never shrink below the minScale floor. When
+    // maxDimension alone would demand a scale below minScale (e.g.
+    // maxDimension=240 against a 1840px-wide capture → 0.13 < 0.25), clamp UP
+    // to minScale and return the smallest allowed image. The previous
+    // `min(1, maxDimension / largestDimension)` left `scale` below minScale,
+    // so the resize loop never ran and the FULL-SIZE original was returned —
+    // the opposite of the caller's "give me a smaller image" intent.
+    var scale = max(min(1, maxDimension / largestDimension), minScale)
 
     if scale >= 1, let original, original.count <= maxBytes {
         return original

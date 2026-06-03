@@ -174,6 +174,40 @@ final class OpenComputerUseKitTests: XCTestCase {
         XCTAssertEqual(size.height, 24)
     }
 
+    func testBoundedScreenshotPNGDataClampsToMinScaleInsteadOfReturningOriginal() throws {
+        // Regression: when maxDimension alone demands a scale below minScale
+        // (here 120/1000 = 0.12 < 0.25), the result must be downsampled to the
+        // minScale floor (0.25 → 250px), NOT left at the full 1000px original.
+        // The old code returned the full-size original in this case.
+        let image = try makeNoisyTestImage(width: 1000, height: 1000)
+        let data = try XCTUnwrap(boundedScreenshotPNGData(
+            for: image,
+            maxBytes: 10_000_000, // large budget so only the dimension path matters
+            maxDimension: 120,
+            minScale: 0.25
+        ))
+        let size = try imageSize(in: data)
+
+        // Must be the minScale-clamped size (~250px), never the 1000px original.
+        XCTAssertLessThan(max(size.width, size.height), 1000)
+        XCTAssertEqual(max(size.width, size.height), 250)
+    }
+
+    func testBoundedScreenshotPNGDataLowerMinScaleAllowsSmallerThanFloor() throws {
+        // Lowering minScale lets maxDimension shrink further than the default
+        // floor would allow — the documented escape hatch for aggressive sizes.
+        let image = try makeNoisyTestImage(width: 1000, height: 1000)
+        let data = try XCTUnwrap(boundedScreenshotPNGData(
+            for: image,
+            maxBytes: 10_000_000,
+            maxDimension: 120,
+            minScale: 0.05
+        ))
+        let size = try imageSize(in: data)
+
+        XCTAssertLessThanOrEqual(max(size.width, size.height), 120)
+    }
+
     func testToolDefinitionCount() {
         XCTAssertEqual(ToolDefinitions.all.count, 9)
     }
