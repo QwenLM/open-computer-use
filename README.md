@@ -9,9 +9,7 @@
 
 `open-computer-use` is an open-source `Computer Use` service wrapped as `MCP`. Any AI agent or MCP client can use it to run Computer Use on macOS, Linux, and Windows.
 
-Originally inspired by reverse-engineering work on macOS's accessibility-driven computer-use patterns. This QwenLM fork is maintained for the Qwen Code agent's built-in desktop automation.
-
-I started this repo with my [harness template](https://github.com/iFurySt/harness-template), a template for quickly spinning up AI-first projects. It has been one of our most useful workflows lately, especially for nearly 100% AI-generated projects. I also wrote [a post](https://www.ifuryst.com/blog/2026/speedrunning-the-ai-era/) about the methodology behind it.
+Originally inspired by reverse-engineering work on macOS's accessibility-driven computer-use patterns. This QwenLM fork is maintained for the Qwen Code agent's built-in desktop automation, and is published to npm as [`@qwen-code/open-computer-use`](https://www.npmjs.com/package/@qwen-code/open-computer-use).
 
 ## Demos
 
