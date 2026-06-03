@@ -216,9 +216,25 @@ function main() {
 
   run("node", [path.join(repoRoot, "scripts", "npm", "build-packages.mjs"), ...options.buildArgs]);
 
+  // Locate staged packages by their package.json rather than assuming a fixed
+  // directory depth. Scoped packages (e.g. @qwen-code/open-computer-use) nest
+  // one level deeper than unscoped ones, so a `-maxdepth 1 -type d` scan would
+  // stop at the `@qwen-code` scope directory (no package.json) and the publish
+  // would fail. Matching package.json files handles both layouts.
   const packageDirsResult = spawnSync(
     "find",
-    [options.outDir, "-mindepth", "1", "-maxdepth", "1", "-type", "d"],
+    [
+      options.outDir,
+      "-mindepth",
+      "1",
+      "-name",
+      "package.json",
+      "-type",
+      "f",
+      "-not",
+      "-path",
+      "*/node_modules/*",
+    ],
     {
       cwd: repoRoot,
       encoding: "utf-8",
@@ -233,6 +249,7 @@ function main() {
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean)
+    .map((packageJsonPath) => path.dirname(packageJsonPath))
     .sort((left, right) => {
       const leftName = JSON.parse(readFileSync(path.join(left, "package.json"), "utf-8")).name;
       const rightName = JSON.parse(readFileSync(path.join(right, "package.json"), "utf-8")).name;

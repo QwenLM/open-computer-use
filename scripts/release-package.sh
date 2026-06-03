@@ -16,9 +16,15 @@ node "${repo_root}/scripts/npm/build-packages.mjs" \
   --arch universal \
   --out-dir "${staging_dir}"
 
-while IFS= read -r package_dir; do
+# Locate staged packages by their package.json rather than assuming a fixed
+# directory depth. Scoped packages (e.g. @qwen-code/open-computer-use) live one
+# level deeper than unscoped ones, so a `-maxdepth 1 -type d` scan would stop at
+# the `@qwen-code` scope directory (which has no package.json) and `npm pack`
+# would ENOENT. Matching package.json files handles both layouts.
+while IFS= read -r package_json; do
+  package_dir="$(dirname "${package_json}")"
   npm pack "${package_dir}" --pack-destination "${tarball_dir}" >/dev/null
-done < <(find "${staging_dir}" -mindepth 1 -maxdepth 1 -type d | sort)
+done < <(find "${staging_dir}" -mindepth 1 -name package.json -type f -not -path '*/node_modules/*' | sort)
 
 python3 - "${release_dir}/release-manifest.json" "${repo_root}" "${tarball_dir}" <<'PY'
 import json
