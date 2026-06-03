@@ -130,9 +130,7 @@ These variables only affect macOS today. The Windows and Linux runtimes return n
 
 ## Cursor Motion
 
-Cursor Motion is an open-source cursor motion system for macOS, based on public information shared by members of the Software.Inc team. You can download the app from the [Releases page](https://github.com/QwenLM/open-computer-use/releases).
-
-[![Cursor Motion custom demo cover](./docs/generated/readme-assets/cursor-motion-demo-cover.png)](https://youtu.be/KRUq5GUHv1Q)
+Cursor Motion is an experimental macOS cursor-motion lab retained from upstream. This QwenLM fork does not build or release the Cursor Motion DMG in CI; build it from source with `swift run CursorMotion` if you want to experiment with it.
 
 ## Star History
 

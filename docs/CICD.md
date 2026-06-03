@@ -4,11 +4,10 @@
 
 ## 当前 release 入口
 
-- `scripts/release-package.sh`：构建 universal `Open Computer Use.app`，cross-compile Linux / Windows runtime，stage 三个既有 root/alias npm 包；每个包都会内置 macOS app、Linux binaries 和 Windows exes，并产出 `dist/release/npm/*.tgz` 与 `dist/release/release-manifest.json`。当前 CI 继续显式使用 ad-hoc signing，保持和此前发布链路一致；本地 debug/dev 构建则允许使用开发机自己的签名身份。
-- `scripts/build-cursor-motion-dmg.sh`：本地构建 `Cursor Motion.app` 并封装 `dist/release/cursor-motion/CursorMotion-<version>.dmg`，支持 `native` / `arm64` / `x86_64` / `universal`。
-- `scripts/build-open-computer-use-linux.sh`：本地构建实验性 Linux `open-computer-use` binary，支持 `arm64` / `amd64`；release package 会把这两个产物内置进既有 npm 包的 `dist/linux/`。
-- `scripts/build-open-computer-use-windows.sh`：本地构建实验性 Windows `open-computer-use.exe`，支持 `arm64` / `amd64`；release package 会把这两个产物内置进既有 npm 包的 `dist/windows/`。
-- `.github/workflows/release.yml`：支持 push semver tag 自动发布，也支持手动触发；tag push 时会同时跑 npm release 打包逻辑与 `Cursor Motion` 的 DMG 打包，并把 `.dmg` 上传到对应的 GitHub Releases 页面。`Open Computer Use` 的 npm 产物默认走 ad-hoc signing；如果配置了 `OPEN_COMPUTER_USE_CODESIGN_*` secrets，则会先导入 `Developer ID Application` 证书，再按同一 identity 对 release `.app` 统一签名。`Cursor Motion` 的 DMG 也会复用同一张 `Developer ID Application` 证书签 app；若同时配置 `APPLE_NOTARY_*` secrets，则会在上传前对 `.dmg` 做 notarization 和 staple。
+- `scripts/release-package.sh`：构建 universal `Open Computer Use.app`，cross-compile Linux / Windows runtime，stage scoped npm 包 `@qwen-code/open-computer-use`；包内会内置 macOS app、Linux binaries 和 Windows exes，并产出 `dist/release/npm/*.tgz` 与 `dist/release/release-manifest.json`。配置了 `OPEN_COMPUTER_USE_CODESIGN_*` secrets 时用 `Developer ID Application` 证书签 `.app`；未配置时回退 ad-hoc signing。本地 debug/dev 构建允许使用开发机自己的签名身份。
+- `scripts/build-open-computer-use-linux.sh`：本地构建实验性 Linux `open-computer-use` binary，支持 `arm64` / `amd64`；release package 会把这两个产物内置进 npm 包的 `dist/linux/`。
+- `scripts/build-open-computer-use-windows.sh`：本地构建实验性 Windows `open-computer-use.exe`，支持 `arm64` / `amd64`；release package 会把这两个产物内置进 npm 包的 `dist/windows/`。
+- `.github/workflows/release.yml`：支持 push semver tag 自动发布，也支持 `workflow_dispatch` 手动触发（手动触发默认不 publish，仅验证 build/sign）。tag push 时跑 npm release 打包并 publish `@qwen-code/open-computer-use` 到 npmjs.org。`Open Computer Use` 的 `.app` 在配置了 `OPEN_COMPUTER_USE_CODESIGN_*` secrets 时用 `Developer ID Application` 证书签名；若同时配置 `APPLE_NOTARY_*` secrets（App Store Connect API Key），tag push 构建会在签名后对 `.app` 做 notarization 并 staple，使分发到 npm 的 bundle 通过 Gatekeeper 离线校验。缺少 notary 凭据时构建照常成功（签名但未公证）。
 
 ## 设计原则
 
@@ -32,8 +31,7 @@
 
 - `dist/release/release-manifest.json`
 - `dist/release/npm/@qwen-code/open-computer-use-<version>.tgz`
-- `dist/release/cursor-motion/CursorMotion-<version>.dmg`
 - GitHub Actions 中上传的 npm release artifact
-- GitHub Releases 中和 tag 对齐的 `CursorMotion-<version>.dmg`
+- tag push 时 publish 到 npmjs.org 的 `@qwen-code/open-computer-use@<version>`
 
-也就是说，即使项目还没进入更复杂的部署阶段，仓库现在也已经同时具备了一条真实可复用的 npm 制品封装链路，以及一条由 git tag 驱动的 macOS app DMG 交付链路。
+也就是说，仓库具备一条由 git tag 驱动、真实可复用的 npm 制品封装 + 签名（可选公证）+ 发布链路。

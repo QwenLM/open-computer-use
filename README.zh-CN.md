@@ -125,9 +125,7 @@ open-computer-use -h
 
 ## Cursor Motion
 
-Cursor Motion 是一个面向 macOS 的开源光标运动系统，基于 Software.Inc 几位大佬的公开信息实现的开源版本，也可以到 [Releases 页面](https://github.com/QwenLM/open-computer-use/releases) 下载 app 运行。
-
-[![Cursor Motion 自定义演示封面](./docs/generated/readme-assets/cursor-motion-demo-cover.png)](https://youtu.be/KRUq5GUHv1Q)
+Cursor Motion 是从上游保留下来的 macOS 光标运动实验 lab。QwenLM fork 的 CI 不再构建或发布 Cursor Motion DMG；如需体验，请用 `swift run CursorMotion` 从源码本地运行。
 
 ## Star History
 

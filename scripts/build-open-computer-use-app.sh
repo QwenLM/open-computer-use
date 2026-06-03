@@ -194,9 +194,16 @@ resolve_codesign_identity() {
   esac
 }
 
+# Records the identity used by the most recent codesign_app_bundle call so
+# notarize_app_bundle can decide whether the bundle is eligible (Developer ID
+# only — ad-hoc "-" and the skipped "none" mode are not notarizable). Empty
+# means "not signed".
+CODESIGN_RESULT_IDENTITY=""
+
 codesign_app_bundle() {
   local app_path="${1:-}"
   local identity=""
+  CODESIGN_RESULT_IDENTITY=""
 
   if ! identity="$(resolve_codesign_identity)"; then
     echo "Skipping codesign for ${app_path} (OPEN_COMPUTER_USE_CODESIGN_MODE=none)" >&2
@@ -216,11 +223,73 @@ codesign_app_bundle() {
   run_with_codesign_keychain "${codesign_keychain}" \
     codesign "${args[@]}" "${app_path}" >/dev/null
 
+  CODESIGN_RESULT_IDENTITY="${identity}"
+
   if [[ "${identity}" == "-" ]]; then
     echo "Signed ${app_path} with ad-hoc identity; macOS TCC may still treat separately built copies as different app identities until a stable Apple signing identity is configured." >&2
   else
     echo "Signed ${app_path} with ${identity}" >&2
   fi
+}
+
+# Submit a Developer ID-signed .app to Apple's notary service and staple the
+# resulting ticket into the bundle, so the copy bundled into the npm tarball is
+# self-contained (Gatekeeper accepts it offline).
+#
+# Opt-in via OPEN_COMPUTER_USE_NOTARIZE=1 — notarization is a slow Apple
+# round-trip and must never run during local dev or smoke builds. Gated on App
+# Store Connect API key credentials (same secrets the Cursor Motion DMG uses).
+# Skips gracefully (never fails the build) when the flag is off, credentials are
+# missing, or the bundle is only ad-hoc signed.
+notarize_app_bundle() {
+  local app_path="${1:-}"
+
+  local notarize_flag="${OPEN_COMPUTER_USE_NOTARIZE:-0}"
+  case "${notarize_flag}" in
+    1 | true | yes | on) ;;
+    *) return 0 ;;
+  esac
+
+  if [[ -z "${CODESIGN_RESULT_IDENTITY}" || "${CODESIGN_RESULT_IDENTITY}" == "-" ]]; then
+    echo "Skipping notarization for ${app_path}: requires a Developer ID signature (got '${CODESIGN_RESULT_IDENTITY:-unsigned}')." >&2
+    return 0
+  fi
+
+  local p8_base64="${APPLE_NOTARY_API_KEY_P8_BASE64:-}"
+  local key_id="${APPLE_NOTARY_KEY_ID:-}"
+  local issuer_id="${APPLE_NOTARY_ISSUER_ID:-}"
+  local team_id="${APPLE_DEVELOPER_TEAM_ID:-}"
+
+  if [[ -z "${p8_base64}" || -z "${key_id}" || -z "${issuer_id}" || -z "${team_id}" ]]; then
+    echo "Skipping notarization for ${app_path}: APPLE_NOTARY_* credentials not fully configured." >&2
+    return 0
+  fi
+
+  local work_dir
+  work_dir="$(mktemp -d "${TMPDIR:-/tmp}/open-computer-use-notarize.XXXXXX")"
+  local api_key_path="${work_dir}/AuthKey_${key_id}.p8"
+  local zip_path="${work_dir}/app-to-notarize.zip"
+
+  P8_BASE64="${p8_base64}" API_KEY_PATH="${api_key_path}" python3 -c 'import base64, os, pathlib; pathlib.Path(os.environ["API_KEY_PATH"]).write_bytes(base64.b64decode(os.environ["P8_BASE64"]))'
+
+  # notarytool needs a container (zip/dmg/pkg); ditto --keepParent preserves the
+  # .app bundle structure inside the zip.
+  /usr/bin/ditto -c -k --keepParent "${app_path}" "${zip_path}"
+
+  echo "Submitting ${app_path} to Apple notary service (this can take a few minutes)..." >&2
+  xcrun notarytool submit "${zip_path}" \
+    --key "${api_key_path}" \
+    --key-id "${key_id}" \
+    --issuer "${issuer_id}" \
+    --team-id "${team_id}" \
+    --wait
+
+  # Staple the ticket into the .app itself so the tarballed copy validates offline.
+  xcrun stapler staple "${app_path}"
+  xcrun stapler validate "${app_path}"
+
+  rm -rf "${work_dir}"
+  echo "Notarized + stapled ${app_path}" >&2
 }
 
 cd "${repo_root}"
@@ -351,5 +420,6 @@ PLIST
 
 plutil -lint "${contents_dir}/Info.plist" >/dev/null
 codesign_app_bundle "${app_root}"
+notarize_app_bundle "${app_root}"
 
 echo "Built ${app_root} (${arch_mode}, ${configuration})"
