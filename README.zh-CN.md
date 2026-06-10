@@ -13,6 +13,16 @@
 
 本仓库是 [QwenLM](https://github.com/QwenLM) 维护的 fork，源自 [`iFurySt/open-codex-computer-use`](https://github.com/iFurySt/open-codex-computer-use)。感谢原作者在 macOS accessibility 驱动的 computer-use 模式上的基础工作。
 
+## 与上游的差异
+
+- **跨平台**: 新增 Windows (Go + PowerShell UI Automation) 和 Linux (Go + Python AT-SPI) runtime
+- **npm 发布**: 以 [`@qwen-code/open-computer-use`](https://www.npmjs.com/package/@qwen-code/open-computer-use) 发布，便于安装
+- **MCP server**: 完整的 MCP stdio transport，包含 9 个 Computer Use tools
+- **CLI 工具**: 新增 `doctor`、`call`、`snapshot`、`list-apps` 命令，用于诊断和脚本化
+- **截图配置**: 支持通过环境变量控制截图尺寸/质量
+- **Qwen Code skill**: 可安装的 Qwen Code agent skill
+- **Cursor Motion**: 保留在 `experiments/` 目录，但不在 CI 中构建或发布
+
 ## 演示
 
 https://cloud.video.taobao.com/vod/kS1Np3LUgPSg07OQ27_z63TWIU_G4nQHBJDA4wynUmk.mp4

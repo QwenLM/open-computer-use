@@ -13,6 +13,16 @@ Published to npm as [`@qwen-code/open-computer-use`](https://www.npmjs.com/packa
 
 This project is a [QwenLM](https://github.com/QwenLM) fork of [`iFurySt/open-codex-computer-use`](https://github.com/iFurySt/open-codex-computer-use). We thank the original author for the foundational work on macOS accessibility-driven computer-use patterns.
 
+## Differences from upstream
+
+- **Cross-platform**: Added Windows (Go + PowerShell UI Automation) and Linux (Go + Python AT-SPI) runtimes
+- **npm distribution**: Published as [`@qwen-code/open-computer-use`](https://www.npmjs.com/package/@qwen-code/open-computer-use) for easy installation
+- **MCP server**: Full MCP stdio transport with 9 Computer Use tools
+- **CLI tools**: Added `doctor`, `call`, `snapshot`, `list-apps` commands for diagnostics and scripting
+- **Image capture tuning**: Environment variables for screenshot size/quality control
+- **Qwen Code skill**: Installable skill for Qwen Code agent integration
+- **Cursor Motion**: Retained in `experiments/` but not built or released in CI
+
 ## Demo
 
 https://cloud.video.taobao.com/vod/kS1Np3LUgPSg07OQ27_z63TWIU_G4nQHBJDA4wynUmk.mp4
