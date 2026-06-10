@@ -11,7 +11,7 @@
 
 ## 演示
 
-https://cloud.video.taobao.com/vod/kS1Np3LUgPSg07OQ27_z63TWIU_G4nQHBJDA4wynUmk.mp4
+<video src="https://github.com/QwenLM/open-computer-use/releases/download/demo-assets/demo.mp4" controls width="100%"></video>
 
 ## Quick Start
 
