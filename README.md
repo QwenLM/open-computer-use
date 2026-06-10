@@ -11,7 +11,7 @@ Published to npm as [`@qwen-code/open-computer-use`](https://www.npmjs.com/packa
 
 ## Demo
 
-https://cloud.video.taobao.com/vod/kS1Np3LUgPSg07OQ27_z63TWIU_G4nQHBJDA4wynUmk.mp4
+https://github.com/user-attachments/assets/cd0d1644-99e5-47fc-b998-c1eb3c1aabff
 
 ## Quick Start
 
