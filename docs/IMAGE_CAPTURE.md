@@ -2,7 +2,7 @@
 
 本文档说明 Open Computer Use 在 macOS 上**如何捕获截图、如何对截图做尺寸与体积约束**，以及新增的 `OPEN_COMPUTER_USE_IMAGE_*` 环境变量逐项的作用与生效逻辑。
 
-> 适用范围：截图的尺寸约束逻辑**目前仅在 macOS runtime 生效**。Windows / Linux runtime 返回原生尺寸 PNG，不做降采样（见末尾「平台差异」）。
+> 适用范围：`OPEN_COMPUTER_USE_IMAGE_*` 的尺寸/体积约束在 **macOS、Windows、Linux 三个 runtime 上均已生效**。下文的「捕获 → 降采样 → 编码」管线以 macOS 实现为例详述；Windows / Linux 通过共享的 Go 模块 `packages/imagebound` 复用**同一套**降采样与坐标重映射逻辑(见末尾「平台差异」)。
 
 ---
 
@@ -151,11 +151,17 @@ OPEN_COMPUTER_USE_IMAGE_MAX_DIMENSION=480 \
 
 | 平台 | 捕获 | 降采样 / 字节约束 |
 |---|---|---|
-| **macOS** | ScreenCaptureKit，native（Retina 2x） | ✅ 本文所述全部生效 |
-| **Windows**（实验） | `System.Drawing.CopyFromScreen`，logical 尺寸 | ❌ 无降采样，原生尺寸 PNG |
-| **Linux**（实验） | GDK `pixbuf_get_from_window`，logical 尺寸 | ❌ 无降采样，原生尺寸 PNG（Wayland 全黑则省略 image） |
+| 平台 | 捕获 | 降采样 / 字节约束 |
+|---|---|---|
+| **macOS** | ScreenCaptureKit，native（Retina 2x） | ✅ Swift 原生实现，本文所述全部生效 |
+| **Windows** | `System.Drawing.CopyFromScreen`，logical 尺寸 | ✅ Go 层 `packages/imagebound` 降采样 + 坐标重映射 |
+| **Linux** | GDK `pixbuf_get_from_window`，logical 尺寸 | ✅ Go 层 `packages/imagebound` 降采样 + 坐标重映射（Wayland 全黑则省略 image） |
 
-`OPEN_COMPUTER_USE_IMAGE_*` 目前只影响 macOS runtime。Windows / Linux 若要同等能力，需要分别在各自的 capture 路径里实现降采样并同步修正坐标映射（属于后续 TODO）。
+Windows / Linux 的尺寸控制实现在 **Go 编排层**：采集脚本（PowerShell `runtime.ps1` / Python `runtime.py`）仍返回**原生尺寸** PNG，Go 在收到后调用共享模块 `packages/imagebound` 做有界降采样（复刻 macOS `boundedScreenshotPNGData`），并把生效的缩放比 `scale` 记在会话快照（`appSnapshot.ScreenshotScale`）上；`click` / `drag` 据此把模型给的**截图像素** `x/y` 除以 `scale` 还原成窗口坐标——**采集脚本零改动**。`scroll` 与 `element_index` 走 AX frame，与截图像素无关，不受影响。
+
+> 两点差异需注意：
+> 1. Windows / Linux 捕获的是 **logical 尺寸**（非 Retina 2×），所以只有当 `MAX_DIMENSION` 小于窗口 logical 长边时才会真正缩小（仍受 `MIN_SCALE` 地板约束）；其余语义与 macOS 完全一致。
+> 2. `OPEN_COMPUTER_USE_IMAGE_CAPTURE_TIMEOUT` **仅对 macOS** 的异步 `SCScreenshotManager` 等待生效——Windows / Linux 的捕获在脚本内同步完成，该变量会被解析但不产生效果。其余三个尺寸/体积变量（`MAX_DIMENSION` / `MAX_BYTES` / `MIN_SCALE`）三平台行为一致。
 
 ---
 
@@ -163,3 +169,4 @@ OPEN_COMPUTER_USE_IMAGE_MAX_DIMENSION=480 \
 
 - `OPEN_COMPUTER_USE_IMAGE_*` 四个环境变量在 `@qwen-code/open-computer-use` fork 中引入。
 - `minScale` 夹取修复（小 `MAX_DIMENSION` 不再退回原图，而是夹到 `minScale`）自 **0.2.3** 起生效。0.2.3 之前，`MAX_DIMENSION` 要求的缩放低于 `MIN_SCALE` 时会错误地返回**全尺寸原图**。
+- Windows / Linux 的同等尺寸/体积控制（含坐标保真）通过共享 Go 模块 `packages/imagebound` 加入；实现位于 `apps/OpenComputerUseWindows` 与 `apps/OpenComputerUseLinux` 的 Go 层，PowerShell / Python 采集脚本不变。`packages/imagebound` 是 macOS `boundedScreenshotPNGData` 的 Go 移植，也是 Win/Linux 两端的单一真源。
