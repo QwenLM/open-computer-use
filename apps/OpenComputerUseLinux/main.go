@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	_ "embed"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,6 +18,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/iFurySt/open-codex-computer-use/packages/imagebound"
 )
 
 var version = "0.1.51"
@@ -85,6 +88,7 @@ type appSnapshot struct {
 	WindowTitle         string          `json:"windowTitle,omitempty"`
 	WindowBounds        *frame          `json:"windowBounds,omitempty"`
 	ScreenshotPNGBase64 string          `json:"screenshotPngBase64,omitempty"`
+	ScreenshotScale     float64         `json:"-"`
 	TreeLines           []string        `json:"treeLines,omitempty"`
 	FocusedSummary      string          `json:"focusedSummary,omitempty"`
 	SelectedText        string          `json:"selectedText,omitempty"`
@@ -253,8 +257,8 @@ func (s *service) click(app, elementIndex string, x, y *float64, clickCount int,
 	request := linuxRequest{
 		Tool:         "click",
 		App:          app,
-		X:            x,
-		Y:            y,
+		X:            scaleCoord(x, snapshot.ScreenshotScale),
+		Y:            scaleCoord(y, snapshot.ScreenshotScale),
 		ClickCount:   clickCount,
 		MouseButton:  mouseButton,
 		WindowBounds: snapshot.WindowBounds,
@@ -335,7 +339,15 @@ func (s *service) drag(app string, fromX, fromY, toX, toY *float64) toolCallResu
 	if snapshot == nil {
 		return textResult("No app state is available for "+app+". Run get_app_state before action tools.", true)
 	}
-	return s.actionResult(app, linuxRequest{Tool: "drag", App: app, FromX: fromX, FromY: fromY, ToX: toX, ToY: toY, WindowBounds: snapshot.WindowBounds})
+	return s.actionResult(app, linuxRequest{
+		Tool:         "drag",
+		App:          app,
+		FromX:        scaleCoord(fromX, snapshot.ScreenshotScale),
+		FromY:        scaleCoord(fromY, snapshot.ScreenshotScale),
+		ToX:          scaleCoord(toX, snapshot.ScreenshotScale),
+		ToY:          scaleCoord(toY, snapshot.ScreenshotScale),
+		WindowBounds: snapshot.WindowBounds,
+	})
 }
 
 func (s *service) typeText(app, text string) toolCallResult {
@@ -405,6 +417,7 @@ func (s *service) refreshSnapshot(app string, request linuxRequest) (*appSnapsho
 	if response.Snapshot == nil {
 		return nil, textResult("Linux runtime did not return an app snapshot.", true)
 	}
+	applyImageBounds(response.Snapshot)
 	s.rememberSnapshot(app, response.Snapshot)
 	return response.Snapshot, toolCallResult{}
 }
@@ -417,6 +430,38 @@ func (s *service) rememberSnapshot(query string, snapshot *appSnapshot) {
 			s.snapshots[key] = snapshot
 		}
 	}
+}
+
+// applyImageBounds downsamples the snapshot's screenshot per the
+// OPEN_COMPUTER_USE_IMAGE_* env vars and records the applied scale so that
+// click/drag can remap screenshot-pixel coordinates back to window-logical
+// space. Empty / undecodable screenshots are left unchanged with scale 1.
+func applyImageBounds(snapshot *appSnapshot) {
+	snapshot.ScreenshotScale = 1
+	if snapshot.ScreenshotPNGBase64 == "" {
+		return
+	}
+	raw, err := base64.StdEncoding.DecodeString(snapshot.ScreenshotPNGBase64)
+	if err != nil {
+		return
+	}
+	bounded, scale := imagebound.BoundedPNG(raw, imagebound.FromEnv(os.Getenv))
+	snapshot.ScreenshotScale = scale
+	snapshot.ScreenshotPNGBase64 = base64.StdEncoding.EncodeToString(bounded)
+}
+
+// scaleCoord maps a model-supplied screenshot-pixel coordinate back to
+// window-logical space by dividing out the downsample scale. Returns a new
+// pointer, or nil when the input is nil. A non-positive scale is treated as 1.
+func scaleCoord(v *float64, scale float64) *float64 {
+	if v == nil {
+		return nil
+	}
+	if scale <= 0 {
+		scale = 1
+	}
+	out := *v / scale
+	return &out
 }
 
 func lookupElement(snapshot *appSnapshot, elementIndex string) (*elementRecord, error) {
