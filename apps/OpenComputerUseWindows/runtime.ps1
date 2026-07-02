@@ -5,6 +5,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Force UTF-8 for both directions so non-ASCII (CJK) text survives the
+# Go<->PowerShell boundary. Without this, zh-CN Windows defaults to GBK
+# (codepage 936) and corrupts operation.json input + stdout output.
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -AssemblyName UIAutomationTypes
 Add-Type -AssemblyName System.Drawing
@@ -848,7 +854,7 @@ function Invoke-TypeText($process, [string]$text) {
     return $false
 }
 
-$operation = Get-Content -Raw -Path $OperationPath | ConvertFrom-Json
+$operation = Get-Content -Raw -Encoding UTF8 -Path $OperationPath | ConvertFrom-Json
 
 try {
     if ($operation.tool -eq "list_apps") {
