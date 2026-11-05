@@ -1,0 +1,13 @@
+packages:
+  - 'packages/browser-use'
+  - 'packages/cua-driver/typescript'
+  - 'packages/node-repl'
+  - 'packages/chrome-extension'
+nodeLinker: hoisted
+linkWorkspacePackages: true
+overrides:
+  typescript: '5.8.3'
+allowBuilds:
+  esbuild: true
+  fsevents: false
+  msw: false

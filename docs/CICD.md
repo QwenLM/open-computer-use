@@ -1,37 +1,107 @@
-# CI/CD 说明
+# CI and release operations
 
-这个模板自带一套不依赖具体语言栈的 CI/CD 骨架。
+This repository builds the extracted CU/BU development version independently of
+Qwen Code. Version 0.28.0 still has an unresolved macOS native SIGSEGV. Migration,
+successful compilation, package tests, and signing do not establish a fix or a
+stable release. No public release is part of the extraction.
 
-## 当前 release 入口
+## Local checks
 
-- `scripts/release-package.sh`：构建 universal `Open Computer Use.app`，cross-compile Linux / Windows runtime，stage scoped npm 包 `@qwen-code/open-computer-use`；包内会内置 macOS app、Linux binaries 和 Windows exes，并产出 `dist/release/npm/*.tgz` 与 `dist/release/release-manifest.json`。配置了 `OPEN_COMPUTER_USE_CODESIGN_*` secrets 时用 `Developer ID Application` 证书签 `.app`；未配置时回退 ad-hoc signing。本地 debug/dev 构建允许使用开发机自己的签名身份。
-- `scripts/build-open-computer-use-linux.sh`：本地构建实验性 Linux `open-computer-use` binary，支持 `arm64` / `amd64`；release package 会把这两个产物内置进 npm 包的 `dist/linux/`。
-- `scripts/build-open-computer-use-windows.sh`：本地构建实验性 Windows `open-computer-use.exe`，支持 `arm64` / `amd64`；release package 会把这两个产物内置进 npm 包的 `dist/windows/`。
-- `.github/workflows/release.yml`：支持 push semver tag 自动发布，也支持 `workflow_dispatch` 手动触发（手动触发默认不 publish，仅验证 build/sign）。tag push 时跑 npm release 打包并 publish `@qwen-code/open-computer-use` 到 npmjs.org。`Open Computer Use` 的 `.app` 在配置了 `OPEN_COMPUTER_USE_CODESIGN_*` secrets 时用 `Developer ID Application` 证书签名；若同时配置 `APPLE_NOTARY_*` secrets（App Store Connect API Key），tag push 构建会在签名后对 `.app` 做 notarization 并 staple，使分发到 npm 的 bundle 通过 Gatekeeper 离线校验。缺少 notary 凭据时构建照常成功（签名但未公证）。
+Install the locked root workspace without running package install hooks, then use
+the root build, typecheck and test scripts. Package install hooks normally fetch
+published native binaries; use an explicitly built local payload for native SDK
+tests of this development version.
 
-## 设计原则
+```sh
+corepack pnpm install --frozen-lockfile --ignore-scripts
+npm run build
+npm run typecheck
+npm test
+npm run test:contracts
+```
 
-这套默认流水线的目标，是在项目真正成形前先把交付链路搭起来，而不是假装已经知道未来项目该怎么 build 和 deploy。
+Run Rust commands from `packages/cua-driver/rust` so rustup selects the checked-in
+1.97.1 toolchain and Cargo applies its local configuration. A complete native
+release builds `cua-driver`, `cua-driver-sdk`, `cursor-theme-cli`, and, on Windows,
+`cua-driver-uia`. The last package is a no-op executable on other hosts. Linux
+builds need `build-essential pkg-config libx11-dev libxi-dev libxtst-dev libxext-dev`.
+Actual GUI tests additionally need the correct logged-in desktop and fixtures;
+headless checks do not provide that evidence.
 
-当新项目的技术栈确定后，你应该继续在 `scripts/release-package.sh` 这条真实构建链路上扩展，而不是另起一套平行流程。
+## Coordinated native and npm release
 
-所有 GitHub Actions 都已经 pin 到 commit SHA。后续升级 action 时，也要继续保持这个约束。
+[cd-cua-driver.yml](../.github/workflows/cd-cua-driver.yml) preserves the native tag
+prefix `cua-driver-rs-v`, binary names, ABI, and archive names. It validates a
+single version across the root, Rust, installers, driver skill, CUA SDK, Browser
+Use and Node REPL. The three npm names remain:
 
-## 推荐接入顺序
+- `@qwen-code/browser-use`
+- `@qwen-code/cua-sdk`
+- `@qwen-code/node-repl-mcp`
 
-1. 保留 `ci.yml`，作为仓库的基础门禁。
-2. 在 `scripts/ci.sh` 里继续叠加项目自己的验证命令。
-3. 在 `scripts/release-package.sh` 已有的真实构建基础上继续扩展 release 产物。
-4. 技术栈和环境稳定后，再补具体的部署 job。
-5. 即使交付方式变化，SBOM 和 provenance 这类供应链能力也建议保留。
+The Chrome extension and Python SDK keep their independent versions. This
+workflow does not publish them. It does not run Qwen Code release scripts or
+switch Qwen Code consumers.
 
-## 默认 release 产物
+The workflow builds Linux x64/arm64, Windows x64/arm64, and macOS universal
+payloads. It checks all 12 native archives, verifies local npm tarballs and clean
+installs, creates the GitHub Release, then publishes Browser Use, CUA SDK and Node
+REPL in dependency order. A production dispatch requires protected `main` and
+macOS notarization; a native release tag must point to a commit reachable from
+`main`. Existing release assets and npm versions are immutable.
 
-当前 release 流水线会产出：
+`workflow_dispatch` defaults to `dry_run=true`. An unsigned build can set
+`notarize=false`; it cannot become a production dispatch. Windows test signing
+is separately opt-in with `test_sign_windows=true` and only applies to dry runs.
+Without it, Windows validates ordinary installation of the unsigned SDK payload
+and does not claim signed-UIAccess installation coverage. No workflow is dispatched
+automatically by local validation commands.
 
-- `dist/release/release-manifest.json`
-- `dist/release/npm/@qwen-code/open-computer-use-<version>.tgz`
-- GitHub Actions 中上传的 npm release artifact
-- tag push 时 publish 到 npmjs.org 的 `@qwen-code/open-computer-use@<version>`
+Production publication is a separately authorized action. The source workflow
+marks GitHub releases as prereleases, but a numeric npm version such as 0.28.0
+uses `latest`; prerelease npm versions use `next`. Do not trigger production
+publication merely to validate this migration. New download URLs are source
+configuration, not proof that assets have been published there.
 
-也就是说，仓库具备一条由 git tag 驱动、真实可复用的 npm 制品封装 + 签名（可选公证）+ 发布链路。
+## Repository settings
+
+Repository administrators must provision settings directly in the target
+repository. Do not read, copy or reuse source-repository secrets as part of a
+code migration. Source inspection cannot establish whether any setting below is
+already configured.
+
+| Setting                  | Required configuration                                                                                                                                                                                                                                                                                                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Actions and runners      | Enable the hosted Linux x64/arm64, Windows and macOS runners used by the workflow. All actions are pinned to commit SHAs. Build jobs have read-only contents permissions; the GitHub Release job needs contents write.                                                                                                                   |
+| Protected release source | Protect `main` and configure the target's release/tag policy. Create the `production-release` environment with the desired reviewers and branch restrictions.                                                                                                                                                                            |
+| macOS certificate        | `MAC_CSC_LINK` contains the base64 Developer ID Application P12 and `MAC_CSC_KEY_PASSWORD` its password. The workflow discovers the signing identity from that certificate.                                                                                                                                                              |
+| Apple notarization       | `APPLE_NOTARY_API_KEY_P8_BASE64`, `APPLE_NOTARY_KEY_ID`, and `APPLE_NOTARY_ISSUER_ID`. The build signs, notarizes, staples and checks Gatekeeper acceptance.                                                                                                                                                                             |
+| SignPath secret          | `SIGNPATH_API_TOKEN`, required only for the explicitly enabled Windows test-signing lane.                                                                                                                                                                                                                                                |
+| SignPath variables       | `SIGNPATH_ORGANIZATION_ID`, `SIGNPATH_PROJECT_SLUG`, `SIGNPATH_SIGNING_POLICY_SLUG`, `SIGNPATH_ARTIFACT_CONFIGURATION_SLUG`, and `SIGNPATH_TEST_CERT_THUMBPRINT`. These must describe a project and test certificate authorized for this repository; there are no source-project defaults. Missing values fail before a signing request. |
+| npm trusted publishers   | Configure each of the three package records for organization `QwenLM`, repository `open-computer-use`, workflow `cd-cua-driver.yml`, and environment `production-release`. Publish jobs have `id-token: write` and use npm 11.19.0 with provenance; there is no npm-token fallback.                                                      |
+
+The macOS and Windows build jobs do not select `production-release`. Their
+signing secrets/variables must be repository settings or organization settings
+explicitly available to this repository. Secrets stored only in the npm release
+environment will not be visible to those build jobs. Never substitute another
+repository's project or certificate to make a dry run pass.
+
+Windows release archives contain the unsigned UIAccess worker. Ordinary SDK
+installation must not deploy it to Program Files. Deployments that deliberately
+enable UIAccess need their own trusted signature and secure installation; the
+test-signing lane imports its configured test certificate only on the disposable
+hosted runner.
+
+## Distribution and licensing
+
+Installers, SDK downloads, native update checks and driver skill downloads point
+to `QwenLM/open-computer-use`. The SDK's release-base override is useful for local
+artifact tests; its fallback also points to this repository. Local tests should
+use their own `QWEN_CUA_SDK_NATIVE_DIR` / `QWEN_CUA_SDK_CACHE_DIR` and must not
+replace an existing Qwen Code runtime or alter system trust.
+
+Retain the Cua MIT copyright, Qwen Apache-2.0 notices, and the MPL-2.0 license and
+corresponding-source notice for the modified UBRN Node runtime. Each native
+archive carries these notices alongside its payload. The source for that runtime
+is the pinned UBRN npm dependency plus this repository's deterministic build
+script and AppKit pump at the matching release tag.

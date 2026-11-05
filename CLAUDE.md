@@ -1,1 +1,1 @@
-<system-reminder>必须先阅读 AGENTS.md。</system-reminder>
+Read [AGENTS.md](AGENTS.md) before working in this repository.

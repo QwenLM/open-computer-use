@@ -1,0 +1,15 @@
+Open Computer Use
+Copyright 2025-2026 Qwen Team
+
+This repository includes CU/BU components extracted from QwenLM/qwen-code.
+The source revision and imported file checksums are recorded in
+docs/source-snapshot.json. Existing copyright and license notices are retained.
+
+The native Cua Driver and its TypeScript/Python SDKs include MIT-licensed
+upstream code. See packages/cua-driver/.vendored-from and the component notices.
+Browser Use includes Apache-2.0 code adapted from Microsoft Playwright;
+see packages/browser-use/NOTICE.
+The Node native adapter is derived from uniffi-bindgen-react-native under
+MPL-2.0. Its pinned dependency, deterministic build transformations and notice
+are in packages/cua-driver/scripts/build-node-runtime.mjs and
+packages/cua-driver/scripts/node-runtime-NOTICE.md.

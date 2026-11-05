@@ -1,15 +1,11 @@
-# 安全策略
+# Security
 
-## 漏洞反馈
+Please report security vulnerabilities using the repository's
+[private vulnerability reporting](https://github.com/QwenLM/open-computer-use/security/advisories/new)
+when available. Do not include credentials, private browser data or desktop
+captures in public issues.
 
-如果发现疑似安全漏洞，不要直接提公开 issue。
-
-请通过你们组织内部约定的私有安全通道反馈，并尽量附上：
-
-- 影响范围和潜在风险。
-- 复现步骤或 PoC。
-- 已知的缓解方式或临时绕过方案。
-
-## 适用范围
-
-这个仓库本身只是一个基础模板。基于它创建的新项目，应该把这里替换成自己真实的安全联系人和响应流程。
+Computer and browser automation can access applications and data available to
+the running user. Configure access in the trusted host and operating system.
+Do not disable platform security controls or trust an unknown signing certificate
+to work around installation or test failures.

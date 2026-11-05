@@ -1,23 +1,33 @@
-# 参与协作
+# Contributing
 
-这个仓库是为 Agent-first 开发准备的，但这些规则对人和 Agent 都一样适用。
+Start with the [architecture](docs/ARCHITECTURE.md) and the source-build commands
+in the [README](README.md). Keep changes within the affected runtime; Qwen Code
+is an external consumer, not a build dependency.
 
-## 基本协作方式
+Use the pinned pnpm lockfile and Rust toolchain. Build the workspace before its
+tests so Browser Use kernel tests exercise the built assets. Run the affected
+package's tests and types; for cross-package changes run `npm run build`,
+`npm run typecheck`, `npm test`, `npm run test:contracts` and `npm run smoke:mcp`.
+The Node N-API fixture needs Python and a C++ compiler; a skipped fixture is not
+evidence of working native loading.
 
-- 从 `AGENTS.md` 开始，再按任务类型去读对应文档。
-- 仓库级知识要落在版本化文件里，不要只存在聊天记录、口头同步或工单评论里。
-- 如果行为变了，就一起更新代码、文档、测试和 release/history 记录。
-- 遇到跨度大、风险高、会分多轮推进的任务，先在 `docs/exec-plans/active/` 下建 execution plan。
+Run `npm run check:native` for native changes. Native library tests can be run
+from `packages/cua-driver/rust` with `cargo test --locked -p cua-driver-contract
+-p cua-driver-core -p cua-driver-sdk --lib`. Desktop/browser integration checks
+require a suitable interactive test machine; distinguish them from compile or
+mock tests. Never change system trust to make a test pass.
 
-## 发起 Pull Request 之前
+Use strict TypeScript, ESM and Prettier. Preserve generated bindings and their
+ownership metadata; use the SDK's `generate:uniffi:check` command to verify them.
+Keep package names, extension identity, native asset naming and versions aligned
+with the [release contract](docs/CICD.md).
 
-- 运行 `make check-docs`。
-- 如果本次改动涉及代码或仓库流程，补齐或更新对应 history。
-- 如果变更对用户可感知，补齐 release note。
-- 确认示例、脚本、说明文档和当前实现一致。
+Record cross-package designs in `docs/design/`, active execution plans in
+`docs/exec-plans/active/`, and completed changes with validation and limitations
+in `docs/histories/`. Use repository-relative links and keep top-level English
+and Chinese documentation synchronized. Never include credentials or local
+machine paths in tracked reports.
 
-## Review 默认要求
-
-- 优先拆成范围清晰的小 PR。
-- 明确写出风险点、迁移影响和后续待办。
-- 如果上下文复杂，直接链接对应 plan、spec 或 history，不要依赖评审者自己猜。
+Before submitting changes, review the complete diff, inspect connected callers,
+and synchronize with the remote branch. Publishing npm/native/extension artifacts
+is a separate operation; see [release operations](docs/CICD.md).
