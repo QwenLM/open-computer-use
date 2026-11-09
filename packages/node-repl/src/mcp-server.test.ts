@@ -37,7 +37,7 @@ async function connected(moduleRoots: string[] = []) {
     client,
     async close() {
       await client.close();
-      dispose();
+      await dispose();
       fs.rmSync(tmpRootDir, { recursive: true, force: true });
     },
   };

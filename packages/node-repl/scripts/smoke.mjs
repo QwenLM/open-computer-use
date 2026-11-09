@@ -78,7 +78,7 @@ try {
     errText.trim(),
   );
 } finally {
-  manager.dispose();
+  await manager.dispose();
 }
 
 console.log(
