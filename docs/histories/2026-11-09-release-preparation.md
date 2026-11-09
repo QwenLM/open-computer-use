@@ -11,6 +11,10 @@ its native implementation, public package names, and archive conventions.
   `OPEN_COMPUTER_USE_CODESIGN_P12_BASE64` and
   `OPEN_COMPUTER_USE_CODESIGN_P12_PASSWORD` secrets. The signing/notarization
   steps stay unchanged; no secret values were read or copied.
+- Run CI on pushes to `release/**` branches. The protected main rejected the
+  release branch despite six successful manual checks on its exact commit;
+  push-triggered checks provide the normal pre-push validation path without
+  changing the protection rules.
 
 Local frozen installation, workspace build, types, package tests, release
 contracts, MCP smoke and direct kernel smoke passed on macOS. Windows hosted
