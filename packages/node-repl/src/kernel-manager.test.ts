@@ -9,6 +9,7 @@ import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { runInNewContext } from 'node:vm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   NodeReplKernelManager,
@@ -2030,6 +2031,44 @@ describe('CUA cell delivery lifecycle', () => {
         );
     },
   );
+
+  it('stops cancelled hooks when the budget timer fires before the wall-clock deadline', async () => {
+    const source = fs.readFileSync(
+      new URL('./runtime/kernel.mjs', import.meta.url),
+      'utf8',
+    );
+    const flushSource = source.slice(
+      source.indexOf('async function flushCellEnd('),
+      source.indexOf('\nasync function handleExec('),
+    );
+    const calls: string[] = [];
+    const controller = new AbortController();
+    controller.abort();
+    let now = 1000;
+    const flush = runInNewContext(`(${flushSource})`, {
+      Date: { now: () => now },
+      cellEndHooks: [
+        () => {
+          calls.push('first');
+          return new Promise(() => {});
+        },
+        () => calls.push('second'),
+      ],
+      asyncContext: {
+        run: (_scope: unknown, callback: () => unknown) => callback(),
+      },
+      hostSetTimeout: (callback: () => void, budget: number) => {
+        queueMicrotask(() => {
+          now += budget - 1;
+          callback();
+        });
+      },
+      hostClearTimeout: () => {},
+      vm: { runInNewContext },
+    });
+    await flush({ execId: 'fixture', abortController: controller }, true);
+    expect(calls).toEqual(['first']);
+  });
 
   it('applies the cancellation budget when a timeout arrives during normal cell-end hooks', async () => {
     await run(`

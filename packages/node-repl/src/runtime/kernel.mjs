@@ -1006,6 +1006,7 @@ async function flushCellEnd(exec, cancelled) {
   });
   try {
     for (const hook of [...cellEndHooks]) {
+      const cancellationBudget = Number.isFinite(deadline);
       const budget = Math.min(200, deadline - Date.now());
       if (budget <= 0) break;
       const scope = { execId: exec.execId, hookActive: true };
@@ -1013,7 +1014,11 @@ async function flushCellEnd(exec, cancelled) {
       try {
         await asyncContext.run(scope, () => {
           const timeout = new Promise((resolve) => {
-            timer = hostSetTimeout(resolve, budget);
+            timer = hostSetTimeout(() => {
+              // Timer expiry consumes the budget even if the wall clock lags.
+              if (cancellationBudget) deadline = -Infinity;
+              resolve();
+            }, budget);
           });
           // Also bound synchronous callbacks; a Promise race alone cannot do so.
           return Promise.race([
