@@ -510,8 +510,8 @@ jobs:
       - name: 'Import signing certificate + discover identity'
         if: "env.DO_NOTARIZE == 'true'"
         env:
-          MAC_CSC_LINK: '${{ secrets.MAC_CSC_LINK }}'
-          MAC_CSC_KEY_PASSWORD: '${{ secrets.MAC_CSC_KEY_PASSWORD }}'
+          MAC_CSC_LINK: '${{ secrets.OPEN_COMPUTER_USE_CODESIGN_P12_BASE64 }}'
+          MAC_CSC_KEY_PASSWORD: '${{ secrets.OPEN_COMPUTER_USE_CODESIGN_P12_PASSWORD }}'
         run: |
           KEYCHAIN_PASSWORD="temp-cd-keychain-pwd"
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
